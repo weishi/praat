@@ -21,7 +21,7 @@ numberOfIntervals = Get number of intervals: 1
 for j to numberOfIntervals
   selectObject: "TextGrid " + input$
   label$ = Get label of interval: 1, j
-  if label$ = "s"
+  if label$ <> ""
     startTime = Get start point: 1, j
     endTime = Get end point: 1, j
     midTime = (startTime + endTime) / 2
