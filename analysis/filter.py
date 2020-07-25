@@ -86,7 +86,7 @@ class IsWordNum(BaseFilter):
         self.word_num = word_num
 
     def GetValue(self):
-        return 'WordNum' + str(self.word_num)
+        return 'Word' + str(self.word_num)
 
     def IsMatched(self, row):
         comps = row['Filename'].split('_')
@@ -109,5 +109,6 @@ class IsPosition(BaseFilter):
     def IsMatched(self, row):
         comps = row['Filename'].split('_')
         assert len(comps) == 5 or len(comps) == 6
-        row_pos = int(comps[4])
+        row_pos = comps[4]
+        assert row_pos in ['a', 'b']
         return row_pos == self.pos

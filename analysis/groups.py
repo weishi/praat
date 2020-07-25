@@ -19,6 +19,7 @@ GROUP_C1 = ([
 ], [
     az.FormantQuantiles(),
     az.FormantRegression(),
+    az.HnrRegression(),
 ])
 
 GROUP_C2 = ([
