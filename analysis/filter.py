@@ -86,11 +86,44 @@ class IsA2(BaseFilter):
         return annotation == 'a2'
 
 
-# group_filters = itertools.product(*GROUP_A)
-# for gf in group_filters:
-#   name = [f.GetValue() for f in gf]
-#   print('@'.join(name))
+class IsVariant(BaseFilter):
+    def __init__(self, variant):
+        self.variant = variant
 
-# row = dict()
-# row['Filename'] = "M_a_05_01_a"
-# row['Annotation'] = "a1"
+    def GetValue(self):
+        return self.variant
+
+    def IsMatched(self, row):
+        annotation = row['Annotation']
+        return annotation == self.variant
+
+class IsWordNum(BaseFilter):
+    def __init__(self, word_num):
+        self.word_num = word_num
+
+    def GetValue(self):
+        return 'WordNum' + str(self.word_num)
+
+    def IsMatched(self, row):
+        comps = row['Filename'].split('_')
+        assert len(comps) == 5 or len(comps) == 6
+        row_word_num = int(comps[3])
+        return row_word_num == self.word_num
+
+
+class IsPosition(BaseFilter):
+    def __init__(self, pos):
+        self.pos = pos
+
+    def GetValue(self):
+        assert self.pos in ['a', 'b']
+        if self.pos == 'a':
+            return 'Front'
+        else:
+            return 'Back'
+
+    def IsMatched(self, row):
+        comps = row['Filename'].split('_')
+        assert len(comps) == 5 or len(comps) == 6
+        row_pos = int(comps[4])
+        return row_pos == self.pos
