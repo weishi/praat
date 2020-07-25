@@ -1,5 +1,6 @@
 import itertools
 
+
 class BaseFilter(object):
     def GetValue(self):
         raise NotImplementedError
@@ -68,24 +69,6 @@ class IsChild(BaseFilter):
         return 61 <= age_gender <= 80
 
 
-class IsA1(BaseFilter):
-    def GetValue(self):
-        return "a1"
-
-    def IsMatched(self, row):
-        annotation = row['Annotation']
-        return annotation == 'a1'
-
-
-class IsA2(BaseFilter):
-    def GetValue(self):
-        return "a2"
-
-    def IsMatched(self, row):
-        annotation = row['Annotation']
-        return annotation == 'a2'
-
-
 class IsVariant(BaseFilter):
     def __init__(self, variant):
         self.variant = variant
@@ -96,6 +79,7 @@ class IsVariant(BaseFilter):
     def IsMatched(self, row):
         annotation = row['Annotation']
         return annotation == self.variant
+
 
 class IsWordNum(BaseFilter):
     def __init__(self, word_num):
