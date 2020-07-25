@@ -131,6 +131,8 @@ class FormantRegression(Analyzer):
         line2dd_max = minimize_scalar(-line2dd, bounds=(0, 8), method='bounded')
         inflection1 = line1dd_max.x
         inflection2 = line2dd_max.x
+        df_inflex = pd.DataFrame(data={'f1_inflection': [inflection1], 'f2_inflection': [inflection2]})
+        df_inflex.to_csv(output_dir / (group_name + '.csv') , index=False)
 
         plt.plot(x, y1, 'o')
         plt.plot(x, y2, 'x')
