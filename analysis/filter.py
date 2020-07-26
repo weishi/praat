@@ -83,16 +83,17 @@ class IsVariant(BaseFilter):
 
 class IsWordNum(BaseFilter):
     def __init__(self, word_num):
+        assert len(word_num) > 0
         self.word_num = word_num
 
     def GetValue(self):
-        return 'Word' + str(self.word_num)
+        return 'Word' + '_'.join(str(x) for x in self.word_num)
 
     def IsMatched(self, row):
         comps = row['Filename'].split('_')
         assert len(comps) == 5 or len(comps) == 6
         row_word_num = int(comps[3])
-        return row_word_num == self.word_num
+        return row_word_num in self.word_num
 
 
 class IsPosition(BaseFilter):

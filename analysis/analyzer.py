@@ -139,7 +139,7 @@ class FormantRegression(Analyzer):
 
 class HnrRegression(Analyzer):
     def GetName(self):
-        return "HnrQuantiles"
+        return "HnrRegression"
 
     def GetInputType(self):
         return "HNR"
@@ -153,7 +153,7 @@ class HnrRegression(Analyzer):
         x = np.arange(0, 9)
         coeff = np.polyfit(x, y, 4)
         line1 = np.poly1d(coeff)
-        line1d = np.polyder(line1, 1)
+        # line1d = np.polyder(line1, 1)
         line1dd = np.polyder(line1, 2)
         line1dd_max = minimize_scalar(-line1dd,
                                       bounds=(0, 8), method='bounded')
@@ -163,7 +163,7 @@ class HnrRegression(Analyzer):
 
         plt.plot(x, y, 'o')
         plt.plot(x, line1(x), label='fitted')
-        plt.plot(x, line1d(x), label='1st deriv')
+        # plt.plot(x, line1d(x), label='1st deriv')
         plt.plot(x, line1dd(x), label='2nd deriv')
         plt.axvline(x=inflection, linestyle=':', label='inflection')
         plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
@@ -171,6 +171,48 @@ class HnrRegression(Analyzer):
         plt.savefig(output_dir / (group_name + '.png'), bbox_inches="tight")
         plt.clf()
         plt.cla()
+
+        output_debug_path = output_dir / (group_name + '.debug.csv')
+        df.to_csv(output_debug_path, index=False)
+
+
+class HnrQuantilesMean(Analyzer):
+    def GetName(self):
+        return "HnrQuantilesMean"
+
+    def GetInputType(self):
+        return "HNR"
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        df['HNR_p25'] = df[['HNR_2', 'HNR_3']].mean(axis=1)
+        df['HNR_p75'] = df[['HNR_7', 'HNR_8']].mean(axis=1)
+        df['HNR_p50'] = df[['HNR_5']]
+        output = pd.DataFrame(
+            df.loc[:, df.columns.str.startswith("HNR_p")].mean()).T
+
+        output_path = output_dir / (group_name + '.csv')
+        output.to_csv(output_path, index=False)
+
+        output_debug_path = output_dir / (group_name + '.debug.csv')
+        df.to_csv(output_debug_path, index=False)
+
+
+class HnrTTest(Analyzer):
+    def GetName(self):
+        return "HnrTTest"
+
+    def GetInputType(self):
+        return "HNR"
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        df['HNR_25p'] = df[['HNR_2', 'HNR_3']].mean(axis=1)
+        df['HNR_75p'] = df[['HNR_7', 'HNR_8']].mean(axis=1)
+        df['HNR_50p'] = df[['HNR_5']]
+        output = pd.DataFrame(
+            df.loc[:, df.columns.str.startswith("diff")].mean()).T
+
+        output_path = output_dir / (group_name + '.csv')
+        output.to_csv(output_path, index=False)
 
         output_debug_path = output_dir / (group_name + '.debug.csv')
         df.to_csv(output_debug_path, index=False)

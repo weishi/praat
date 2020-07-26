@@ -114,5 +114,5 @@ output_base_dir = Path('output/')
 # df_formant = LoadFormantData()
 # AnalyzeFormant(df_formant)
 df_hnr = LoadHnrData()
-grp = groups.GROUP_C1
+grp = groups.GROUP_C
 AnalyzeHnr(df_hnr, grp)
