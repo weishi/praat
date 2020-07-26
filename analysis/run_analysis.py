@@ -11,10 +11,12 @@ def removeChars(s):
         s = s.replace(c, '')
     return s
 
+
 def rchop(s, suffix):
     if suffix and s.endswith(suffix):
         return s[:-len(suffix)]
     return s
+
 
 def LoadFormantData():
     all_data = []
@@ -50,7 +52,8 @@ def LoadHnrData():
                 trim[0] = rchop(trim[0], '.wav')
                 of.write(','.join(trim)+'\n')
 
-        single_df = pd.read_csv(output_csv, na_values=['--undefined--'])
+        single_df = pd.read_csv(output_csv, converters={
+            'Word': removeChars}, na_values=['--undefined--'])
         single_df.drop(single_df.filter(regex="Unname"), axis=1, inplace=True)
         assert single_df.shape[1] == 16
         clean_df = single_df.dropna()
@@ -65,8 +68,8 @@ def LoadHnrData():
     return df
 
 
-def AnalyzeFormant(df):
-    group_filters = itertools.product(*groups.GROUP_A[0])
+def AnalyzeFormant(df, grp):
+    group_filters = itertools.product(*grp[0])
     for gf in group_filters:
         group_name = '@'.join([f.GetValue() for f in gf])
         print(group_name)
@@ -77,7 +80,10 @@ def AnalyzeFormant(df):
                 continue
             matched_rows.append(row)
         matched_df = pd.DataFrame(matched_rows)
-        for analysis in groups.GROUP_A[1]:
+        if len(matched_rows) == 0:
+            print("No data")
+            continue
+        for analysis in grp[1]:
             if analysis.GetInputType() != "Formant":
                 continue
             output_dir = output_base_dir / analysis.GetName()
@@ -111,8 +117,10 @@ def AnalyzeHnr(df, grp):
 shutil.rmtree(Path('output'), ignore_errors=True)
 output_base_dir = Path('output/')
 
-# df_formant = LoadFormantData()
-# AnalyzeFormant(df_formant)
-df_hnr = LoadHnrData()
-grp = groups.GROUP_C
-AnalyzeHnr(df_hnr, grp)
+ALL_GROUPS = [groups.GROUP_A, groups.GROUP_C, groups.GROUP_D1, groups.GROUP_D2]
+# ALL_GROUPS = [groups.GROUP_C]
+for grp in ALL_GROUPS:
+    df_formant = LoadFormantData()
+    AnalyzeFormant(df_formant, grp)
+    df_hnr = LoadHnrData()
+    AnalyzeHnr(df_hnr, grp)
