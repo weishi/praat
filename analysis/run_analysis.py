@@ -20,11 +20,11 @@ def rchop(s, suffix):
 
 def LoadFormantData():
     all_data = []
-    for input in sorted(Path('./').rglob('*_Formant.CSV')):
+    for input in sorted(Path('./').rglob('*_Formant.*')):
         output_csv = input.parent / (input.stem + '_new.CSV')
         with open(input, 'r') as inf, open(output_csv, 'w') as of:
             for line in inf:
-                trim = (field.strip() for field in line.split(','))
+                trim = [field.strip() for field in line.split(',')]
                 of.write(','.join(trim)+'\n')
 
         single_df = pd.read_csv(output_csv, converters={
