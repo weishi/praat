@@ -20,7 +20,7 @@ def rchop(s, suffix):
 
 def LoadFormantData():
     all_data = []
-    for input in sorted(Path('./').rglob('*_Formant.*')):
+    for input in sorted(input_base_dir.rglob('*_Formant.*')):
         output_csv = input.parent / (input.stem + '_new.CSV')
         with open(input, 'r') as inf, open(output_csv, 'w') as of:
             for line in inf:
@@ -31,7 +31,9 @@ def LoadFormantData():
             'Annotation': removeChars}, na_values=['--undefined--'])
         single_df.drop(single_df.filter(regex="Unname"), axis=1, inplace=True)
         assert single_df.shape[1] == 181
-        clean_df = single_df.dropna()
+        cols1 = ['barkF1_' + str(i) for i in range(1,12)]
+        cols2 = ['barkF2_' + str(i) for i in range(1,12)]
+        clean_df = single_df.dropna(subset=cols1+cols2)
         num_nan = len(single_df) - len(clean_df)
         if num_nan > 0:
             print(input, 'Dropped', num_nan)
@@ -44,7 +46,7 @@ def LoadFormantData():
 
 def LoadHnrData():
     all_data = []
-    for input in sorted(Path('./').rglob('*_HNR.txt')):
+    for input in sorted(input_base_dir.rglob('*_HNR.txt')):
         output_csv = input.parent / (input.stem + '_new.txt')
         with open(input, 'r') as inf, open(output_csv, 'w') as of:
             for line in inf:
@@ -114,8 +116,10 @@ def AnalyzeHnr(df, grp):
             analysis.RunAnalysis(matched_df, group_name, output_dir)
 
 
-shutil.rmtree(Path('output'), ignore_errors=True)
-output_base_dir = Path('output/')
+
+input_base_dir = Path('./test16/')
+output_base_dir = input_base_dir / 'output/'
+shutil.rmtree(output_base_dir, ignore_errors=True)
 
 ALL_GROUPS = [groups.GROUP_A, groups.GROUP_C, groups.GROUP_D1, groups.GROUP_D2]
 # ALL_GROUPS = [groups.GROUP_C]

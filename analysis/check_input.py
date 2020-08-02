@@ -10,7 +10,7 @@ def rchop(s, suffix):
 
 def CheckFormant():
     invalid_rows = []
-    for input in sorted(Path('./').rglob('*_Formant.*')):
+    for input in sorted(input_base_dir.rglob('*_Formant.*')):
         output_csv = input.parent / (input.stem + '_new.CSV')
         with open(input, 'r') as inf, open(output_csv, 'w') as of:
             for line in inf:
@@ -37,7 +37,7 @@ def CheckFormant():
 
 def CheckHnr():
     invalid_rows = []
-    for input in sorted(Path('./').rglob('*_HNR.txt')):
+    for input in sorted(input_base_dir.rglob('*_HNR.txt')):
         output_csv = input.parent / (input.stem + '_new.txt')
         with open(input, 'r') as inf, open(output_csv, 'w') as of:
             for line in inf:
@@ -59,6 +59,7 @@ def CheckHnr():
                 print(bad_row)
     return invalid_rows
 
+input_base_dir = Path('./test24/')
 output = []
 output = output + CheckFormant()
 output = output + CheckHnr()
