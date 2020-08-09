@@ -116,8 +116,7 @@ def AnalyzeHnr(df, grp):
             analysis.RunAnalysis(matched_df, group_name, output_dir)
 
 
-
-input_base_dir = Path('./test16/')
+input_base_dir = Path('./test40/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 

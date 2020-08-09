@@ -59,7 +59,7 @@ def CheckHnr():
                 print(bad_row)
     return invalid_rows
 
-input_base_dir = Path('./test24/')
+input_base_dir = Path('./test40/')
 output = []
 output = output + CheckFormant()
 output = output + CheckHnr()

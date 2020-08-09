@@ -113,3 +113,17 @@ class IsPosition(BaseFilter):
         row_pos = comps[4]
         assert row_pos in ['a', 'b']
         return row_pos == self.pos
+
+class IsShanghainese(BaseFilter):
+    def GetValue(self):
+        return "S"
+
+    def IsMatched(self, row):
+        return row['Filename'].startswith('S')
+
+class IsMandarin(BaseFilter):
+    def GetValue(self):
+        return "M"
+
+    def IsMatched(self, row):
+        return row['Filename'].startswith('M')

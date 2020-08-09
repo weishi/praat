@@ -2,6 +2,7 @@ import filter as ft
 import analyzer as az
 
 GROUP_A = ([
+    [ft.IsShanghainese(), ft.IsMandarin()],
     [ft.IsMale(), ft.IsFemale()],
     [ft.IsChild(), ft.IsYouth(), ft.IsAdult(), ft.IsSenior()],
     [ft.IsVariant('a1'), ft.IsVariant('a2')],
@@ -11,6 +12,7 @@ GROUP_A = ([
 ])
 
 GROUP_C = ([
+    [ft.IsShanghainese(), ft.IsMandarin()],
     [ft.IsMale(), ft.IsFemale()],
     [ft.IsChild(), ft.IsYouth(), ft.IsAdult(), ft.IsSenior()],
     [ft.IsVariant('c1'),
@@ -27,10 +29,11 @@ GROUP_C = ([
     az.FormantQuantiles(),
     az.FormantRegression(),
     az.HnrRegression(),
-    az.HnrQuantilesMean(),
+    # az.HnrQuantilesMean(),
 ])
 
 GROUP_D1 = ([
+    [ft.IsShanghainese(), ft.IsMandarin()],
     [ft.IsMale(), ft.IsFemale()],
     [ft.IsChild(), ft.IsYouth(), ft.IsAdult(), ft.IsSenior()],
     [ft.IsVariant('d1'), ft.IsVariant('d2')],
@@ -41,10 +44,11 @@ GROUP_D1 = ([
     az.FormantQuantiles(),
     az.FormantRegression(),
     az.HnrRegression(),
-    az.HnrQuantilesMean()
+    # az.HnrQuantilesMean()
 ])
 
 GROUP_D2 = ([
+    [ft.IsShanghainese(), ft.IsMandarin()],
     [ft.IsMale(), ft.IsFemale()],
     [ft.IsChild(), ft.IsYouth(), ft.IsAdult(), ft.IsSenior()],
     [ft.IsVariant('d2n'), ft.IsVariant('d2h')],
@@ -53,5 +57,5 @@ GROUP_D2 = ([
     az.FormantQuantiles(),
     az.FormantRegression(),
     az.HnrRegression(),
-    az.HnrQuantilesMean()
+    # az.HnrQuantilesMean()
 ])
