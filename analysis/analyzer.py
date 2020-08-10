@@ -84,6 +84,61 @@ class FormantQuantiles(Analyzer):
         output.to_csv(output_path, index=False)
 
 
+class FormantQuantilesByDemographic(Analyzer):
+    def GetName(self):
+        return "FormantQuantilesByDemographic"
+
+    def GetInputType(self):
+        return "Formant"
+
+    def RunAnalysis(self, df, outer_filters, inner_filters, group_name, output_dir):
+        kBarWidth = 0.2
+        for outer_f in outer_filters:
+            key = outer_f.GetValue()
+            matched_rows = dict()
+            for _, row in df.iterrows():
+                for inner_f in inner_filters:
+                    if inner_f.IsMatched(row):
+                        matched_rows.setdefault(
+                            inner_f.GetValue(), []).append(row)
+            x = np.arange(3)
+            for k, v in matched_rows.items():
+                matched_df = pd.DataFrame(v)
+                full_group_name = group_name + '@'+outer_f.GetValue()+'_'+k
+                df_mean = self.ComputeMean(
+                    matched_df, full_group_name, output_dir)
+                y = [df_mean['diff_F1F2_25p'][0],
+                     df_mean['diff_F1F2_50p'][0],
+                     df_mean['diff_F1F2_75p'][0]]
+                plt.bar(x, y, width=kBarWidth, label=k)
+                x = [xval + kBarWidth for xval in x]
+            plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+            plt.xticks([r + kBarWidth for r in range(3)],
+                       ('25%', '50%', '75%'))
+            plt.title(key)
+            plt.savefig(output_dir / (group_name + '@' +
+                                      key + '.png'), bbox_inches="tight")
+            plt.clf()
+            plt.cla()
+
+    def ComputeMean(self, df, full_group_name, output_dir):
+        df['barkF1_25p'] = df[['barkF1_3', 'barkF1_4']].mean(axis=1)
+        df['barkF1_75p'] = df[['barkF1_8', 'barkF1_9']].mean(axis=1)
+        df['barkF1_50p'] = df[['barkF1_6']]
+        df['barkF2_25p'] = df[['barkF2_3', 'barkF2_4']].mean(axis=1)
+        df['barkF2_75p'] = df[['barkF2_8', 'barkF2_9']].mean(axis=1)
+        df['barkF2_50p'] = df[['barkF2_6']]
+        df['diff_F1F2_25p'] = df['barkF1_25p'] - df['barkF2_25p']
+        df['diff_F1F2_50p'] = df['barkF1_50p'] - df['barkF2_50p']
+        df['diff_F1F2_75p'] = df['barkF1_75p'] - df['barkF2_75p']
+
+        output = pd.DataFrame(
+            df.loc[:, df.columns.str.startswith("diff")].mean()).T
+        output_path = output_dir / (full_group_name + '.csv')
+        output.to_csv(output_path, index=False)
+        return output
+
+
 class FormantRegression(Analyzer):
     def GetName(self):
         return "FormantRegression"
@@ -122,7 +177,8 @@ class FormantRegression(Analyzer):
         plt.plot(x, line2(x), label='F2 fitted')
         plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
         plt.title(group_name)
-        plt.savefig(output_dir / (group_name + '.fitted.png'), bbox_inches="tight")
+        plt.savefig(output_dir / (group_name + '.fitted.png'),
+                    bbox_inches="tight")
         plt.clf()
         plt.cla()
         # plt.plot(x, line1d(x), label='F1 1st deriv')
@@ -134,7 +190,8 @@ class FormantRegression(Analyzer):
         plt.axvline(x=inflection2, linestyle='-.', label='F2 inflection')
         plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
         plt.title(group_name)
-        plt.savefig(output_dir / (group_name + '.inflection.png'), bbox_inches="tight")
+        plt.savefig(output_dir / (group_name + '.inflection.png'),
+                    bbox_inches="tight")
         plt.clf()
         plt.cla()
         output_debug_path = output_dir / (group_name + '.debug.csv')

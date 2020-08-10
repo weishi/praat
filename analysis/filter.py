@@ -5,6 +5,9 @@ class BaseFilter(object):
     def GetValue(self):
         raise NotImplementedError
 
+    def GetType(self):
+        raise NotImplementedError
+
     def IsMatched(self, row):
         raise NotImplementedError
 
@@ -19,6 +22,9 @@ class IsMale(BaseFilter):
     def GetValue(self):
         return "Male"
 
+    def GetType(self):
+        return "Gender"
+
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
         return age_gender % 2 == 1
@@ -27,6 +33,9 @@ class IsMale(BaseFilter):
 class IsFemale(BaseFilter):
     def GetValue(self):
         return "Female"
+
+    def GetType(self):
+        return "Gender"
 
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
@@ -37,6 +46,9 @@ class IsSenior(BaseFilter):
     def GetValue(self):
         return "Senior1_20"
 
+    def GetType(self):
+        return "Age"
+
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
         return 1 <= age_gender <= 20
@@ -45,6 +57,9 @@ class IsSenior(BaseFilter):
 class IsAdult(BaseFilter):
     def GetValue(self):
         return "Adult21_40"
+
+    def GetType(self):
+        return "Age"
 
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
@@ -55,6 +70,9 @@ class IsYouth(BaseFilter):
     def GetValue(self):
         return "Youth41_60"
 
+    def GetType(self):
+        return "Age"
+
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
         return 41 <= age_gender <= 60
@@ -63,6 +81,9 @@ class IsYouth(BaseFilter):
 class IsChild(BaseFilter):
     def GetValue(self):
         return "Child61_80"
+
+    def GetType(self):
+        return "Age"
 
     def IsMatched(self, row):
         age_gender = BaseFilter.GetAgeGender(self, row)
@@ -76,6 +97,9 @@ class IsVariant(BaseFilter):
     def GetValue(self):
         return self.variant
 
+    def GetType(self):
+        return "Variant"
+
     def IsMatched(self, row):
         annotation = row['Annotation']
         return annotation == self.variant
@@ -88,6 +112,9 @@ class IsWordNum(BaseFilter):
 
     def GetValue(self):
         return 'Word' + '_'.join(str(x) for x in self.word_num)
+
+    def GetType(self):
+        return "WordNum"
 
     def IsMatched(self, row):
         comps = row['Filename'].split('_')
@@ -107,6 +134,9 @@ class IsPosition(BaseFilter):
         else:
             return 'Back'
 
+    def GetType(self):
+        return "Position"
+
     def IsMatched(self, row):
         comps = row['Filename'].split('_')
         assert len(comps) == 5 or len(comps) == 6
@@ -116,14 +146,20 @@ class IsPosition(BaseFilter):
 
 class IsShanghainese(BaseFilter):
     def GetValue(self):
-        return "S"
+        return "Shanghainese"
+
+    def GetType(self):
+        return "Accent"
 
     def IsMatched(self, row):
         return row['Filename'].startswith('S')
 
 class IsMandarin(BaseFilter):
     def GetValue(self):
-        return "M"
+        return "Mandarin"
+
+    def GetType(self):
+        return "Accent"
 
     def IsMatched(self, row):
         return row['Filename'].startswith('M')

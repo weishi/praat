@@ -3,7 +3,9 @@ from pathlib import Path
 import itertools
 import numpy as np
 import pandas as pd
+import filter as ft
 import groups
+import analyzer
 
 
 def removeChars(s):
@@ -31,8 +33,8 @@ def LoadFormantData():
             'Annotation': removeChars}, na_values=['--undefined--'])
         single_df.drop(single_df.filter(regex="Unname"), axis=1, inplace=True)
         assert single_df.shape[1] == 181
-        cols1 = ['barkF1_' + str(i) for i in range(1,12)]
-        cols2 = ['barkF2_' + str(i) for i in range(1,12)]
+        cols1 = ['barkF1_' + str(i) for i in range(1, 12)]
+        cols2 = ['barkF2_' + str(i) for i in range(1, 12)]
         clean_df = single_df.dropna(subset=cols1+cols2)
         num_nan = len(single_df) - len(clean_df)
         if num_nan > 0:
@@ -93,6 +95,42 @@ def AnalyzeFormant(df, grp):
             analysis.RunAnalysis(matched_df, group_name, output_dir)
 
 
+def AnalyzeFormantByDemographic(df, grp):
+    non_age_gender_grp = []
+    for filter_arr in grp[0]:
+        has_age_gender = False
+        for f in filter_arr:
+            if f.GetType() in ('Age', 'Gender'):
+                has_age_gender = True
+        if not has_age_gender:
+            non_age_gender_grp.append(filter_arr)
+
+    group_filters = itertools.product(*non_age_gender_grp)
+    for gf in group_filters:
+        group_name = '@'.join([f.GetValue() for f in gf])
+        print(group_name)
+        matched_rows = []
+        for _, row in df.iterrows():
+            is_all_matched = [f.IsMatched(row) for f in gf]
+            if not np.all(is_all_matched):
+                continue
+            matched_rows.append(row)
+        matched_df = pd.DataFrame(matched_rows)
+        if len(matched_rows) == 0:
+            print("No data")
+            continue
+        kAgeFilter = [ft.IsMale(), ft.IsFemale()]
+        kGenderFilter = [ft.IsChild(), ft.IsYouth(),
+                         ft.IsAdult(), ft.IsSenior()]
+        analysis = analyzer.FormantQuantilesByDemographic()
+        output_dir = output_base_dir / analysis.GetName()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        analysis.RunAnalysis(matched_df, kAgeFilter,
+                             kGenderFilter, group_name, output_dir)
+        analysis.RunAnalysis(matched_df, kGenderFilter,
+                             kAgeFilter, group_name, output_dir)
+
+
 def AnalyzeHnr(df, grp):
     group_filters = itertools.product(*grp[0])
     for gf in group_filters:
@@ -125,5 +163,6 @@ ALL_GROUPS = [groups.GROUP_A, groups.GROUP_C, groups.GROUP_D1, groups.GROUP_D2]
 for grp in ALL_GROUPS:
     df_formant = LoadFormantData()
     AnalyzeFormant(df_formant, grp)
+    AnalyzeFormantByDemographic(df_formant, grp)
     df_hnr = LoadHnrData()
     AnalyzeHnr(df_hnr, grp)
