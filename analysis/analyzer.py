@@ -97,14 +97,18 @@ class FormantQuantilesByDemographic(Analyzer):
             key = outer_f.GetValue()
             matched_rows = dict()
             for _, row in df.iterrows():
+                if not outer_f.IsMatched(row):
+                    continue
                 for inner_f in inner_filters:
                     if inner_f.IsMatched(row):
                         matched_rows.setdefault(
                             inner_f.GetValue(), []).append(row)
+            if len(matched_rows) == 0:
+                continue
             x = np.arange(3)
             for k, v in matched_rows.items():
                 matched_df = pd.DataFrame(v)
-                full_group_name = group_name + '@'+outer_f.GetValue()+'_'+k
+                full_group_name = group_name + '@' + outer_f.GetValue() + '@@' + k
                 df_mean = self.ComputeMean(
                     matched_df, full_group_name, output_dir)
                 y = [df_mean['diff_F1F2_25p'][0],
@@ -134,8 +138,12 @@ class FormantQuantilesByDemographic(Analyzer):
 
         output = pd.DataFrame(
             df.loc[:, df.columns.str.startswith("diff")].mean()).T
+
         output_path = output_dir / (full_group_name + '.csv')
+        output_debug_path = output_dir / (full_group_name + '.debug.csv')
+
         output.to_csv(output_path, index=False)
+        df.to_csv(output_debug_path, index=False)
         return output
 
 
