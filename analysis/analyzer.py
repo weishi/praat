@@ -7,6 +7,8 @@ from matplotlib import pyplot as plt
 from scipy.optimize import minimize_scalar
 
 
+kBarWidth = 0.2
+
 def fitLine(row, formantName, start, end, outputDir):
     key = '@'.join([row['Filename'], row['Annotation'], formantName])
     x = np.arange(2, 11)
@@ -92,7 +94,6 @@ class FormantQuantilesByDemographic(Analyzer):
         return "Formant"
 
     def RunAnalysis(self, df, outer_filters, inner_filters, group_name, output_dir):
-        kBarWidth = 0.2
         for outer_f in outer_filters:
             key = outer_f.GetValue()
             matched_rows = dict()
@@ -282,4 +283,80 @@ class HnrTTest(Analyzer):
         output.to_csv(output_path, index=False)
 
         output_debug_path = output_dir / (group_name + '.debug.csv')
+        df.to_csv(output_debug_path, index=False)
+
+def AnalyzeFormantQuantiles(df_map, group_name, output_dir):
+    x = np.arange(2)
+    for grp, df in df_map.items():
+        df['barkF1_25p'] = df[['barkF1_3', 'barkF1_4']].mean(axis=1)
+        df['barkF1_75p'] = df[['barkF1_8', 'barkF1_9']].mean(axis=1)
+        df['barkF2_25p'] = df[['barkF2_3', 'barkF2_4']].mean(axis=1)
+        df['barkF2_75p'] = df[['barkF2_8', 'barkF2_9']].mean(axis=1)
+        df['diff_F1_7525'] = df['barkF1_75p'] - df['barkF1_25p']
+        df['diff_F2_7525'] = df['barkF2_75p'] - df['barkF2_25p']
+
+        output_debug_path = output_dir / (group_name + '@@@' + grp + '.debug.csv')
+        df.to_csv(output_debug_path, index=False)
+
+        df_avg = pd.DataFrame(
+            df.loc[:, df.columns.str.startswith("diff")].mean()).T
+        y = [df_avg['diff_F1_7525'][0], df_avg['diff_F2_7525'][0]]
+        plt.bar(x, y, width=kBarWidth, label=grp)
+        x = [xval + kBarWidth for xval in x]
+
+    plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+    plt.xticks([r + kBarWidth for r in range(2)], ('delta_F1', 'delta_F2'))
+    plt.title(group_name)
+    plt.savefig(output_dir / (group_name + '.png'), bbox_inches="tight")
+    plt.clf()
+    plt.cla()
+
+
+def AnalyzeFormantRegression(df_map, group_name, output_dir):
+    for grp, df in df_map.items():
+        full_group_name = group_name + '@@@' + grp
+        s_f1 = df.loc[:, df.columns.str.startswith("barkF1")].mean()
+        s_f2 = df.loc[:, df.columns.str.startswith("barkF2")].mean()
+        x = np.arange(0, 9)
+        y1 = s_f1['barkF1_2': 'barkF1_10'].to_numpy(dtype='float')
+        y2 = s_f2['barkF2_2': 'barkF2_10'].to_numpy(dtype='float')
+        coeff1 = np.polyfit(x, y1, 4)
+        coeff2 = np.polyfit(x, y2, 4)
+        line1 = np.poly1d(coeff1)
+        line2 = np.poly1d(coeff2)
+        line1dd = np.polyder(line1, 2)
+        line2dd = np.polyder(line2, 2)
+        line1dd_max = minimize_scalar(-line1dd,
+                                      bounds=(0, 8), method='bounded')
+        line2dd_max = minimize_scalar(-line2dd,
+                                      bounds=(0, 8), method='bounded')
+        inflection1 = line1dd_max.x
+        inflection2 = line2dd_max.x
+        df_inflex = pd.DataFrame(
+            data={'f1_inflection': [inflection1], 'f2_inflection': [inflection2]})
+        df_inflex.to_csv(output_dir / (full_group_name + '.csv'), index=False)
+
+        # Plot f1/f2
+        plt.plot(x, y1, 'o')
+        plt.plot(x, y2, 'x')
+        plt.plot(x, line1(x), label='F1 fitted')
+        plt.plot(x, line2(x), label='F2 fitted')
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.title(full_group_name)
+        plt.savefig(output_dir / (full_group_name + '.fitted.png'),
+                    bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+        # Plot deriv and inflection
+        plt.plot(x, line1dd(x), label='F1 2nd deriv')
+        plt.plot(x, line2dd(x), label='F2 2nd deriv')
+        plt.axvline(x=inflection1, linestyle=':', label='F1 inflection')
+        plt.axvline(x=inflection2, linestyle='-.', label='F2 inflection')
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.title(full_group_name)
+        plt.savefig(output_dir / (full_group_name + '.inflection.png'),
+                    bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+        output_debug_path = output_dir / (full_group_name + '.debug.csv')
         df.to_csv(output_debug_path, index=False)
