@@ -4,10 +4,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+import matplotlib.ticker as mtick
 from scipy.optimize import minimize_scalar
+
+import filter
 
 
 kBarWidth = 0.2
+
 
 def fitLine(row, formantName, start, end, outputDir):
     key = '@'.join([row['Filename'], row['Annotation'], formantName])
@@ -285,36 +289,140 @@ class HnrTTest(Analyzer):
         output_debug_path = output_dir / (group_name + '.debug.csv')
         df.to_csv(output_debug_path, index=False)
 
-def AnalyzeFormantQuantiles(df_map, group_name, output_dir):
-    x = np.arange(2)
-    for grp, df in df_map.items():
-        df['barkF1_25p'] = df[['barkF1_3', 'barkF1_4']].mean(axis=1)
-        df['barkF1_75p'] = df[['barkF1_8', 'barkF1_9']].mean(axis=1)
-        df['barkF2_25p'] = df[['barkF2_3', 'barkF2_4']].mean(axis=1)
-        df['barkF2_75p'] = df[['barkF2_8', 'barkF2_9']].mean(axis=1)
-        df['diff_F1_7525'] = df['barkF1_75p'] - df['barkF1_25p']
-        df['diff_F2_7525'] = df['barkF2_75p'] - df['barkF2_25p']
 
-        output_debug_path = output_dir / (group_name + '@@@' + grp + '.debug.csv')
-        df.to_csv(output_debug_path, index=False)
-
-        df_avg = pd.DataFrame(
-            df.loc[:, df.columns.str.startswith("diff")].mean()).T
-        y = [df_avg['diff_F1_7525'][0], df_avg['diff_F2_7525'][0]]
-        plt.bar(x, y, width=kBarWidth, label=grp)
-        x = [xval + kBarWidth for xval in x]
-
-    plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
-    plt.xticks([r + kBarWidth for r in range(2)], ('delta_F1', 'delta_F2'))
-    plt.title(group_name)
-    plt.savefig(output_dir / (group_name + '.png'), bbox_inches="tight")
-    plt.clf()
-    plt.cla()
+def ComputeF1F2Diff(df):
+    df['barkF1_25p'] = df[['barkF1_3', 'barkF1_4']].mean(axis=1)
+    df['barkF1_75p'] = df[['barkF1_8', 'barkF1_9']].mean(axis=1)
+    df['barkF2_25p'] = df[['barkF2_3', 'barkF2_4']].mean(axis=1)
+    df['barkF2_75p'] = df[['barkF2_8', 'barkF2_9']].mean(axis=1)
+    df['diff_F1_7525'] = df['barkF1_75p'] - df['barkF1_25p']
+    df['diff_F2_7525'] = df['barkF2_75p'] - df['barkF2_25p']
+    return df
 
 
-def AnalyzeFormantRegression(df_map, group_name, output_dir):
-    for grp, df in df_map.items():
-        full_group_name = group_name + '@@@' + grp
+class FormantQuantilesF1F2Base(Analyzer):
+    def __init__(self, filter_map):
+        self.filter_map = filter_map
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows_map = {}
+        for key, _ in self.filter_map.items():
+            matched_rows_map[key] = []
+
+        for _, row in df.iterrows():
+            for key, filters in self.filter_map.items():
+                is_all_matched = [f.IsMatched(row) for f in filters]
+                if np.all(is_all_matched):
+                    matched_rows_map[key].append(row)
+        matched_df = {}
+        for key, rows in matched_rows_map.items():
+            matched_df[key] = pd.DataFrame(rows)
+
+        x = np.arange(2)
+        for key, mdf in matched_df.items():
+            mdf = ComputeF1F2Diff(mdf)
+            df_mean = pd.DataFrame(
+                mdf.loc[:, mdf.columns.str.startswith("diff")].mean()).T
+            mdf.to_csv(output_dir / (group_name + '@@@' +
+                                     key + '.debug.csv'), index=False)
+            df_mean.to_csv(output_dir / (group_name + '@@@' +
+                                         key+'Mean.debug.csv'), index=False)
+            y = [df_mean['diff_F1_7525'][0], df_mean['diff_F2_7525'][0]]
+            plt.bar(x, y, width=kBarWidth, label=key)
+            x = [xval + kBarWidth for xval in x]
+
+        plt.xticks([r + kBarWidth for r in range(2)], ('delta_F1', 'delta_F2'))
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.title(group_name)
+        plt.savefig(output_dir / (group_name + '.png'), bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+
+class FormantQuantilesF1F2SaSb(FormantQuantilesF1F2Base):
+    def __init__(self):
+        super().__init__({
+            'Sa': [filter.IsShanghainese(), filter.IsPosition('a')],
+            'Sb': [filter.IsShanghainese(), filter.IsPosition('b')],
+        })
+
+
+class FormantQuantilesF1F2SbMb(FormantQuantilesF1F2Base):
+    def __init__(self):
+        super().__init__({
+            'Sb': [filter.IsShanghainese(), filter.IsPosition('b')],
+            'Mb': [filter.IsMandarin(), filter.IsPosition('b')],
+        })
+
+
+class FormantQuantilesSbMbBase(Analyzer):
+    def __init__(self, formant):
+        self.formant = formant
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        rows_sb = []
+        rows_mb = []
+        for _, row in df.iterrows():
+            if filter.IsShanghainese().IsMatched(row) and filter.IsPosition('b').IsMatched(row):
+                rows_sb.append(row)
+                continue
+            if filter.IsMandarin().IsMatched(row) and filter.IsPosition('b').IsMatched(row):
+                rows_mb.append(row)
+                continue
+
+        df_sb = pd.DataFrame(rows_sb)
+        df_sb = ComputeF1F2Diff(df_sb)
+        df_sb_avg = pd.DataFrame(
+            df_sb.loc[:, df_sb.columns.str.startswith("diff")].mean()).T
+        df_sb.to_csv(output_dir / (group_name +
+                                   '@@@Sb.debug.csv'), index=False)
+        df_sb_avg.to_csv(output_dir / (group_name +
+                                       '@@@SbMean.debug.csv'), index=False)
+
+        df_mb = pd.DataFrame(rows_mb)
+        df_mb = ComputeF1F2Diff(df_mb)
+        df_mb_avg = pd.DataFrame(
+            df_mb.loc[:, df_mb.columns.str.startswith("diff")].mean()).T
+        df_mb.to_csv(output_dir / (group_name +
+                                   '@@@Mb.debug.csv'), index=False)
+        df_mb_avg.to_csv(output_dir / (group_name +
+                                       '@@@MbMean.debug.csv'), index=False)
+
+        x = ['Sb', 'Mb']
+        y = [df_sb_avg['diff_' + self.formant + '_7525'][0],
+             df_mb_avg['diff_'+self.formant+'_7525'][0]]
+        plt.bar(x, y, width=kBarWidth)
+
+        plt.title(group_name)
+        plt.savefig(output_dir / (group_name + '.png'), bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+
+class FormantQuantilesF1SbMb(FormantQuantilesSbMbBase):
+    def __init__(self):
+        super().__init__('F1')
+
+
+class FormantQuantilesF2SbMb(FormantQuantilesSbMbBase):
+    def __init__(self):
+        super().__init__('F2')
+
+
+class FormantRegressionBase(Analyzer):
+    def __init__(self, filters):
+        self.filters = filters
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows = []
+        for _, row in df.iterrows():
+            is_all_matched = [f.IsMatched(row) for f in self.filters]
+            if np.all(is_all_matched):
+                matched_rows.append(row)
+        df = pd.DataFrame(matched_rows)
+
+        filter_name = '_'.join([f.GetValue() for f in self.filters])
+        full_group_name = group_name + '@@' + filter_name
         s_f1 = df.loc[:, df.columns.str.startswith("barkF1")].mean()
         s_f2 = df.loc[:, df.columns.str.startswith("barkF2")].mean()
         x = np.arange(0, 9)
@@ -360,3 +468,245 @@ def AnalyzeFormantRegression(df_map, group_name, output_dir):
         plt.cla()
         output_debug_path = output_dir / (full_group_name + '.debug.csv')
         df.to_csv(output_debug_path, index=False)
+
+
+class FormantRegressionSa(FormantRegressionBase):
+    def __init__(self):
+        super().__init__([filter.IsShanghainese(), filter.IsPosition('a')])
+
+
+class FormantRegressionSb(FormantRegressionBase):
+    def __init__(self):
+        super().__init__([filter.IsShanghainese(), filter.IsPosition('b')])
+
+
+class FormantRegressionMb(FormantRegressionBase):
+    def __init__(self):
+        super().__init__([filter.IsMandarin(), filter.IsPosition('b')])
+
+
+class FormantInflectionBase(Analyzer):
+    def __init__(self, filter_map):
+        self.filter_map = filter_map
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows_map = {}
+        for key, _ in self.filter_map.items():
+            matched_rows_map[key] = []
+
+        for _, row in df.iterrows():
+            for key, filters in self.filter_map.items():
+                is_all_matched = [f.IsMatched(row) for f in filters]
+                if np.all(is_all_matched):
+                    matched_rows_map[key].append(row)
+        matched_df = {}
+        for key, rows in matched_rows_map.items():
+            matched_df[key] = pd.DataFrame(rows)
+
+        x_all = []
+        f1_front = []
+        f1_back = []
+        f2_front = []
+        f2_back = []
+        for key, mdf in matched_df.items():
+            s_f1 = mdf.loc[:, mdf.columns.str.startswith("barkF1")].mean()
+            s_f2 = mdf.loc[:, mdf.columns.str.startswith("barkF2")].mean()
+            x = np.arange(0, 9)
+            y1 = s_f1['barkF1_2': 'barkF1_10'].to_numpy(dtype='float')
+            y2 = s_f2['barkF2_2': 'barkF2_10'].to_numpy(dtype='float')
+            coeff1 = np.polyfit(x, y1, 4)
+            coeff2 = np.polyfit(x, y2, 4)
+            line1 = np.poly1d(coeff1)
+            line2 = np.poly1d(coeff2)
+            line1dd = np.polyder(line1, 2)
+            line2dd = np.polyder(line2, 2)
+            line1dd_max = minimize_scalar(-line1dd,
+                                          bounds=(0, 8), method='bounded')
+            line2dd_max = minimize_scalar(-line2dd,
+                                          bounds=(0, 8), method='bounded')
+            inflection1 = line1dd_max.x
+            inflection2 = line2dd_max.x
+            x_all.append(key)
+            f1_front.append(inflection1 / 8.0)
+            f1_back.append(1 - inflection1 / 8.0)
+            f2_front.append(inflection2 / 8.0)
+            f2_back.append(1 - inflection2 / 8.0)
+
+        plt.bar(x_all, f1_front, width=kBarWidth, label='Front')
+        plt.bar(x_all, f1_back, bottom=np.array(
+            f1_front), width=kBarWidth, label='Back')
+        plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
+        plt.title(group_name+'@@F1')
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.savefig(output_dir / (group_name + '.f1.png'), bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+        plt.bar(x_all, f2_front, width=kBarWidth, label='Front')
+        plt.bar(x_all, f2_back, bottom=np.array(
+            f2_front), width=kBarWidth, label='Back')
+        plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
+        plt.title(group_name+'@@F2')
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.savefig(output_dir / (group_name + '.f2.png'), bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+
+class FormantInflectionMb(FormantInflectionBase):
+    def __init__(self):
+        super().__init__({'Mb': [filter.IsMandarin(), filter.IsPosition('b')]})
+
+
+class FormantInflectionSbMb(FormantInflectionBase):
+    def __init__(self):
+        super().__init__({
+            'Sb': [filter.IsShanghainese(), filter.IsPosition('b')],
+            'Mb': [filter.IsMandarin(), filter.IsPosition('b')]
+        })
+
+
+def GetAge(row):
+    comps = row['Filename'].split('_')
+    assert len(comps) == 5 or len(comps) == 6
+    age_gender = int(comps[2])
+    if 1 <= age_gender <= 20:
+        return 'Senior'
+    if 21 <= age_gender <= 40:
+        return 'Adult'
+    if 41 <= age_gender <= 60:
+        return 'Youth'
+    if 61 <= age_gender <= 80:
+        return 'Child'
+    raise NotImplementedError
+
+
+def GetGender(row):
+    comps = row['Filename'].split('_')
+    assert len(comps) == 5 or len(comps) == 6
+    age_gender = int(comps[2])
+    if age_gender % 2 == 0:
+        return 'Female'
+    else:
+        return 'Male'
+
+
+class FormantQuantilesSlicedBase(Analyzer):
+    def __init__(self, formant, word, word_filters, slicer):
+        self.formant = formant
+        self.word = word
+        self.word_filters = word_filters
+        self.slicer = slicer
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows_map = {}
+        for _, row in df.iterrows():
+            is_all_matched = [f.IsMatched(row) for f in self.word_filters]
+            if np.all(is_all_matched):
+                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+
+        x = []
+        y = []
+        full_group_name = group_name + '@@' + self.formant+'_'+self.word
+        for key, matched_rows in matched_rows_map.items():
+            mdf = pd.DataFrame(matched_rows)
+            mdf = ComputeF1F2Diff(mdf)
+            df_mean = pd.DataFrame(
+                mdf.loc[:, mdf.columns.str.startswith("diff")].mean()).T
+            mdf.to_csv(output_dir / (full_group_name + '@@@' +
+                                     key + '.debug.csv'), index=False)
+            df_mean.to_csv(output_dir / (full_group_name + '@@@' +
+                                         key+'Mean.debug.csv'), index=False)
+            x.append(key)
+            y.append(df_mean['diff_'+self.formant+'_7525'][0])
+
+        plt.bar(x, y)
+        plt.title(full_group_name)
+        plt.savefig(output_dir / (full_group_name + '.png'),
+                    bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+
+class FormantQuantilesF1SbAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+
+class FormantQuantilesF2SbAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+
+class FormantQuantilesF1MbAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetAge)
+
+
+class FormantQuantilesF2MbAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetAge)
+
+
+class FormantQuantilesF1SbGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetGender)
+
+
+class FormantQuantilesF2SbGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetGender)
+
+
+class FormantQuantilesF1MbGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetGender)
+
+
+class FormantQuantilesF2MbGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetGender)
+
+class FormantInflectionSlicedBase(Analyzer):
+    def __init__(self, formant, word, word_filters, slicer):
+        self.formant = formant
+        self.word = word
+        self.word_filters = word_filters
+        self.slicer = slicer
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows_map = {}
+        for _, row in df.iterrows():
+            is_all_matched = [f.IsMatched(row) for f in self.word_filters]
+            if np.all(is_all_matched):
+                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+
+        x = []
+        y = []
+        full_group_name = group_name + '@@' + self.formant+'_'+self.word
+        for key, matched_rows in matched_rows_map.items():
+            mdf = pd.DataFrame(matched_rows)
+            mdf = ComputeF1F2Diff(mdf)
+            df_mean = pd.DataFrame(
+                mdf.loc[:, mdf.columns.str.startswith("diff")].mean()).T
+            mdf.to_csv(output_dir / (full_group_name + '@@@' +
+                                     key + '.debug.csv'), index=False)
+            df_mean.to_csv(output_dir / (full_group_name + '@@@' +
+                                         key+'Mean.debug.csv'), index=False)
+            x.append(key)
+            y.append(df_mean['diff_'+self.formant+'_7525'][0])
+
+        plt.bar(x, y)
+        plt.title(full_group_name)
+        plt.savefig(output_dir / (full_group_name + '.png'),
+                    bbox_inches="tight")
+        plt.clf()
+        plt.cla()

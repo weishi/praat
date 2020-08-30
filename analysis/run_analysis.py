@@ -72,43 +72,43 @@ def LoadHnrData():
     print('Final', df.shape)
     return df
 
+# S_a_01_03_b,a1
+# key: a_01_03
+# value: S_a_b_a1
+
+
 def GetUserKeyValue(row):
-  comps = row['Filename'].split('_')
-  assert len(comps) == 5 or len(comps) == 6
-  lang = comps[0]
-  vowel = comps[1]
-  person = comps[2]
-  word = comps[3]
-  position = comps[4]
-  annotation = row['Annotation']
-  key = '_'.join([vowel, person, word])
-  value = '_'.join([lang, vowel, position, annotation]) 
-  return key, value
+    comps = row['Filename'].split('_')
+    assert len(comps) == 5 or len(comps) == 6
+    lang = comps[0]
+    vowel = comps[1]
+    person = comps[2]
+    word = comps[3]
+    position = comps[4]
+    annotation = row['Annotation']
+    key = '_'.join([vowel, person, word])
+    value = '_'.join([lang, vowel, position, annotation])
+    return key, value
 
 
 def FilterFormant(df, condition):
-  user_map = {}
-  for _, row in df.iterrows():
-    key, value = GetUserKeyValue(row)
-    user_map.setdefault(key, set()).add(value)
-  matched_users = set()
-  for user, value in user_map.items():
-    if condition.IsMatchedUser(value):
-      matched_users.add(user)
-  row_groups = {}
-  for _, row in df.iterrows():
-    key, _ = GetUserKeyValue(row)
-    if key not in matched_users:
-      continue
-    matched, key = condition.IsMatchedRow(row)
-    if matched:
-      row_groups.setdefault(key, []).append(row)
-  output_df_map = {}
-  for grp, rows in row_groups.items():
-    print(grp + '=====' + str(len(rows)))
-    df = pd.DataFrame(rows)
-    output_df_map[grp] = df
-  return output_df_map
+    user_map = {}
+    for _, row in df.iterrows():
+        key, value = GetUserKeyValue(row)
+        user_map.setdefault(key, set()).add(value)
+    matched_users = set()
+    for user, value in user_map.items():
+        if condition.IsMatchedUser(value):
+            matched_users.add(user)
+    matched_rows = []
+    for _, row in df.iterrows():
+        key, _ = GetUserKeyValue(row)
+        if key not in matched_users:
+            continue
+        matched_rows.append(row)
+    print(condition.GetGroupName(), ' = ', len(matched_rows))
+    df = pd.DataFrame(matched_rows)
+    return df
 
 
 def AnalyzeFormant(df, grp):
@@ -197,23 +197,47 @@ input_base_dir = Path('./test40/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 
-# ALL_GROUPS = [groups.GROUP_A, groups.GROUP_C, groups.GROUP_D1, groups.GROUP_D2]
-ALL_GROUPS = []
-for grp in ALL_GROUPS:
+CONDITIONS = [
+    (condition.Condition(['S_a_a_a1', 'S_a_b_a1']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantQuantilesF1SbMb(),
+        analyzer.FormantQuantilesF2SbMb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantRegressionMb(),
+        analyzer.FormantInflectionMb(),
+    ]),
+    (condition.Condition(['S_a_a_a1', 'S_a_b_a2']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantQuantilesF1SbMb(),
+        analyzer.FormantQuantilesF2SbMb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantRegressionMb(),
+        analyzer.FormantInflectionMb(),
+    ]),
+    (condition.Condition(['S_a_a_a1', 'S_a_b_a2']),
+     [
+        analyzer.FormantQuantilesF1SbAge(),
+        analyzer.FormantQuantilesF2SbAge(),
+        analyzer.FormantQuantilesF1MbAge(),
+        analyzer.FormantQuantilesF2MbAge(),
+        analyzer.FormantQuantilesF1SbGender(),
+        analyzer.FormantQuantilesF2SbGender(),
+        analyzer.FormantQuantilesF1MbGender(),
+        analyzer.FormantQuantilesF2MbGender(),
+    ]),
+]
+
+for c, analyzers in CONDITIONS:
     df_formant = LoadFormantData()
-    AnalyzeFormant(df_formant, grp)
-    AnalyzeFormantByDemographic(df_formant, grp)
-    df_hnr = LoadHnrData()
-    AnalyzeHnr(df_hnr, grp)
+    df = FilterFormant(df_formant, c)
 
-for c in condition.CONDITION_A:
-    df_formant = LoadFormantData()
-    df_map = FilterFormant(df_formant, c)
-
-    output_dir = output_base_dir / 'FormantQuantilesPlots'
-    output_dir.mkdir(parents=True, exist_ok=True)
-    analyzer.AnalyzeFormantQuantiles(df_map, c.GetGroupName(), output_dir)
-
-    output_dir = output_base_dir / 'FormantRegressionPlots'
-    output_dir.mkdir(parents=True, exist_ok=True)
-    analyzer.AnalyzeFormantRegression(df_map, c.GetGroupName(), output_dir)
+    for a in analyzers:
+        analyzer_name = a.__class__.__name__
+        print(analyzer_name)
+        output_dir = output_base_dir / analyzer_name
+        output_dir.mkdir(parents=True, exist_ok=True)
+        a.RunAnalysis(df, c.GetGroupName(), output_dir)
