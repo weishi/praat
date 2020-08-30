@@ -532,13 +532,14 @@ class FormantInflectionBase(Analyzer):
             f2_front.append(inflection2 / 8.0)
             f2_back.append(1 - inflection2 / 8.0)
 
+        full_group_name = group_name + '@@' + '_'.join(matched_df.keys())
         plt.bar(x_all, f1_front, width=kBarWidth, label='Front')
         plt.bar(x_all, f1_back, bottom=np.array(
             f1_front), width=kBarWidth, label='Back')
         plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
-        plt.title(group_name+'@@F1')
+        plt.title(full_group_name+'@@@F1')
         plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
-        plt.savefig(output_dir / (group_name + '.f1.png'), bbox_inches="tight")
+        plt.savefig(output_dir / (full_group_name + '.f1.png'), bbox_inches="tight")
         plt.clf()
         plt.cla()
 
@@ -546,9 +547,9 @@ class FormantInflectionBase(Analyzer):
         plt.bar(x_all, f2_back, bottom=np.array(
             f2_front), width=kBarWidth, label='Back')
         plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
-        plt.title(group_name+'@@F2')
+        plt.title(full_group_name+'@@@F2')
         plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
-        plt.savefig(output_dir / (group_name + '.f2.png'), bbox_inches="tight")
+        plt.savefig(output_dir / (full_group_name + '.f2.png'), bbox_inches="tight")
         plt.clf()
         plt.cla()
 
@@ -675,6 +676,79 @@ class FormantQuantilesF2MbGender(FormantQuantilesSlicedBase):
         super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
                          GetGender)
 
+class FormantRegressionSlicedBase(Analyzer):
+    def __init__(self, word, word_filters, slicer):
+        self.word = word
+        self.word_filters = word_filters
+        self.slicer = slicer
+
+    def RunAnalysis(self, df, group_name, output_dir):
+        matched_rows_map = {}
+        for _, row in df.iterrows():
+            is_all_matched = [f.IsMatched(row) for f in self.word_filters]
+            if np.all(is_all_matched):
+                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+
+        full_group_name = group_name + '@@' + self.word
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        z_label = sorted(matched_rows_map.keys())
+        cmap = plt.get_cmap('viridis')
+        colors = cmap(np.linspace(0, 1, len(z_label)))
+        for key, matched_rows in matched_rows_map.items():
+            mdf = pd.DataFrame(matched_rows)
+            s_f1 = mdf.loc[:, mdf.columns.str.startswith("barkF1")].mean()
+            s_f2 = mdf.loc[:, mdf.columns.str.startswith("barkF2")].mean()
+            x = np.arange(0, 9)
+            y1 = s_f1['barkF1_2': 'barkF1_10'].to_numpy(dtype='float')
+            y2 = s_f2['barkF2_2': 'barkF2_10'].to_numpy(dtype='float')
+            coeff1 = np.polyfit(x, y1, 4)
+            coeff2 = np.polyfit(x, y2, 4)
+            line1 = np.poly1d(coeff1)
+            line2 = np.poly1d(coeff2)
+            line1dd = np.polyder(line1, 2)
+            line2dd = np.polyder(line2, 2)
+            line1dd_max = minimize_scalar(-line1dd,
+                                          bounds=(0, 8), method='bounded')
+            line2dd_max = minimize_scalar(-line2dd,
+                                          bounds=(0, 8), method='bounded')
+            inflection1 = line1dd_max.x
+            inflection2 = line2dd_max.x
+            inflection1y = line1(inflection1)
+            inflection2y = line2(inflection2)
+            color = colors[z_label.index(key)]
+            z = z_label.index(key)
+            ax.plot(x, y1, zs=z, zdir='x', c=color, label='F1', linewidth=3.0)
+            ax.plot(x, y2, zs=z, zdir='x', c=color, label='F2')
+            ax.plot([inflection1, inflection1], [inflection1y-1, inflection1y+1], zs=z, zdir='x', c='black')
+            ax.plot([inflection2, inflection2], [inflection2y-1, inflection2y+1], zs=z, zdir='x', c='black')
+
+        ax.set(xticks=range(len(z_label)), xticklabels=z_label)
+        plt.title(full_group_name)
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        plt.savefig(output_dir / (full_group_name + '.png'),
+                    bbox_inches="tight")
+        plt.clf()
+        plt.cla()
+
+class FormantRegressionSbAge(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Sb', [filter.IsShanghainese(), filter.IsPosition('b')], GetAge)
+
+class FormantRegressionMbAge(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Mb', [filter.IsMandarin(), filter.IsPosition('b')], GetAge)
+
+class FormantRegressionSbGender(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Sb', [filter.IsShanghainese(), filter.IsPosition('b')], GetGender)
+
+class FormantRegressionMbGender(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Mb', [filter.IsMandarin(), filter.IsPosition('b')], GetGender)
+
+
+
 class FormantInflectionSlicedBase(Analyzer):
     def __init__(self, formant, word, word_filters, slicer):
         self.formant = formant
@@ -689,24 +763,72 @@ class FormantInflectionSlicedBase(Analyzer):
             if np.all(is_all_matched):
                 matched_rows_map.setdefault(self.slicer(row), []).append(row)
 
-        x = []
-        y = []
+        x_all = []
+        y_front = []
+        y_back = []
         full_group_name = group_name + '@@' + self.formant+'_'+self.word
         for key, matched_rows in matched_rows_map.items():
             mdf = pd.DataFrame(matched_rows)
-            mdf = ComputeF1F2Diff(mdf)
-            df_mean = pd.DataFrame(
-                mdf.loc[:, mdf.columns.str.startswith("diff")].mean()).T
-            mdf.to_csv(output_dir / (full_group_name + '@@@' +
-                                     key + '.debug.csv'), index=False)
-            df_mean.to_csv(output_dir / (full_group_name + '@@@' +
-                                         key+'Mean.debug.csv'), index=False)
-            x.append(key)
-            y.append(df_mean['diff_'+self.formant+'_7525'][0])
+            formant_prefix = 'bark' + self.formant
+            f = mdf.loc[:, mdf.columns.str.startswith(formant_prefix)].mean()
+            x = np.arange(0, 9)
+            y = f[formant_prefix + '_2': formant_prefix + '_10'].to_numpy(dtype='float')
+            coeff = np.polyfit(x, y, 4)
+            line = np.poly1d(coeff)
+            linedd = np.polyder(line, 2)
+            linedd_max = minimize_scalar(-linedd,
+                                          bounds=(0, 8), method='bounded')
+            inflection = linedd_max.x
+            x_all.append(key)
+            y_front.append(inflection / 8.0)
+            y_back.append(1 - inflection / 8.0)
 
-        plt.bar(x, y)
+        full_group_name = group_name + '@@' + self.formant + '_' + self.word
+        plt.bar(x_all, y_front, width=kBarWidth, label='Front')
+        plt.bar(x_all, y_back, bottom=np.array(y_front), width=kBarWidth, label='Back')
+        plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
         plt.title(full_group_name)
         plt.savefig(output_dir / (full_group_name + '.png'),
                     bbox_inches="tight")
         plt.clf()
         plt.cla()
+
+class FormantInflectionF1SbAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+class FormantInflectionF2SbAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+class FormantInflectionF1MbAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetAge)
+
+class FormantInflectionF2MbAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetAge)
+
+class FormantInflectionF1SbGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetGender)
+
+class FormantInflectionF2SbGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetGender)
+
+class FormantInflectionF1MbGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetGender)
+
+class FormantInflectionF2MbGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
+                         GetGender)
