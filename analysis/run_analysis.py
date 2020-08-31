@@ -98,7 +98,7 @@ def FilterFormant(df, condition):
         user_map.setdefault(key, set()).add(value)
     matched_users = set()
     for user, value in user_map.items():
-        if condition.IsMatchedUser(value):
+        if condition.IsMatchedUser(user, value):
             matched_users.add(user)
     matched_rows = []
     for _, row in df.iterrows():
@@ -197,7 +197,7 @@ input_base_dir = Path('./test40/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 
-CONDITIONS = [
+CONDITIONS_A = [
     (condition.Condition(['S_a_a_a1', 'S_a_b_a1']),
      [
         analyzer.FormantQuantilesF1F2SaSb(),
@@ -246,7 +246,7 @@ CONDITIONS = [
         # analyzer.FormantInflectionF1BbAge(),
         # analyzer.FormantInflectionF2BbAge(),
     ]),
-    (condition.Condition(['S_a_a_a1', 'S_a_b_a2']), # 5
+    (condition.Condition(['S_a_a_a1', 'S_a_b_a2']),  # 5
      [
         analyzer.FormantQuantilesF1SbGender(),
         analyzer.FormantQuantilesF2SbGender(),
@@ -264,7 +264,131 @@ CONDITIONS = [
     ]),
 ]
 
-for c, analyzers in CONDITIONS:
+CONDITIONS_8_AGE = [
+    analyzer.FormantQuantilesF1SaAge(),
+    analyzer.FormantQuantilesF1SbAge(),
+    analyzer.FormantQuantilesF2SaAge(),
+    analyzer.FormantQuantilesF2SbAge(),
+    analyzer.FormantRegressionSaAge(),
+    analyzer.FormantRegressionSbAge(),
+    analyzer.FormantInflectionF1SbAge(),
+    analyzer.FormantInflectionF2SbAge(),
+]
+CONDITIONS_8_GENDER = [
+    analyzer.FormantQuantilesF1SaGender(),
+    analyzer.FormantQuantilesF1SbGender(),
+    analyzer.FormantQuantilesF2SaGender(),
+    analyzer.FormantQuantilesF2SbGender(),
+    analyzer.FormantRegressionSaGender(),
+    analyzer.FormantRegressionSbGender(),
+    analyzer.FormantInflectionF1SbGender(),
+    analyzer.FormantInflectionF2SbGender(),
+]
+CONDITIONS_C = [
+    # 1
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 2
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 3
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2vs']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 4
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
+    ]),
+    # 5
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
+    ]),
+    # 6
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
+    ]),
+    # 7
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2vs']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
+    ]),
+    # 8a
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2']),
+     CONDITIONS_8_AGE
+     ),
+    # 8b
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['01', '02']),
+     CONDITIONS_8_AGE
+     ),
+    # 8c
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['03', '04', '05', '06']),
+     CONDITIONS_8_AGE
+     ),
+    # 8d
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['07', '08', '09']),
+     CONDITIONS_8_AGE
+     ),
+    # 8e
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['10']),
+     CONDITIONS_8_AGE
+     ),
+    # 8f
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 9a
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9b
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['01', '02']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9c
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['03', '04', '05', '06']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9d
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['07', '08', '09']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9e
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['10']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9f
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+]
+
+for c, analyzers in CONDITIONS_C:
     df_formant = LoadFormantData()
     df = FilterFormant(df_formant, c)
 

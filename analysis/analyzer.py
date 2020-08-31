@@ -566,19 +566,25 @@ class FormantInflectionSbMb(FormantInflectionBase):
             'Mb': [filter.IsMandarin(), filter.IsPosition('b')]
         })
 
+class FormantInflectionSaSb(FormantInflectionBase):
+    def __init__(self):
+        super().__init__({
+            'Sa': [filter.IsShanghainese(), filter.IsPosition('a')],
+            'Sb': [filter.IsShanghainese(), filter.IsPosition('b')],
+        })
 
 def GetAge(row):
     comps = row['Filename'].split('_')
     assert len(comps) == 5 or len(comps) == 6
     age_gender = int(comps[2])
     if 1 <= age_gender <= 20:
-        return 'Senior'
+        return '1.Senior'
     if 21 <= age_gender <= 40:
-        return 'Adult'
+        return '2.Adult'
     if 41 <= age_gender <= 60:
-        return 'Youth'
+        return '3.Youth'
     if 61 <= age_gender <= 80:
-        return 'Child'
+        return '4.Child'
     raise NotImplementedError
 
 
@@ -587,9 +593,9 @@ def GetGender(row):
     assert len(comps) == 5 or len(comps) == 6
     age_gender = int(comps[2])
     if age_gender % 2 == 0:
-        return 'Female'
+        return '1.Female'
     else:
-        return 'Male'
+        return '2.Male'
 
 
 class FormantQuantilesSlicedBase(Analyzer):
@@ -628,10 +634,21 @@ class FormantQuantilesSlicedBase(Analyzer):
         plt.clf()
         plt.cla()
 
+class FormantQuantilesF1SaAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
+                         GetAge)
+
 
 class FormantQuantilesF1SbAge(FormantQuantilesSlicedBase):
     def __init__(self):
         super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+
+class FormantQuantilesF2SaAge(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
                          GetAge)
 
 
@@ -652,12 +669,20 @@ class FormantQuantilesF2MbAge(FormantQuantilesSlicedBase):
         super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
                          GetAge)
 
+class FormantQuantilesF1SaGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
+                         GetGender)
 
 class FormantQuantilesF1SbGender(FormantQuantilesSlicedBase):
     def __init__(self):
         super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
                          GetGender)
 
+class FormantQuantilesF2SaGender(FormantQuantilesSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
+                         GetGender)
 
 class FormantQuantilesF2SbGender(FormantQuantilesSlicedBase):
     def __init__(self):
@@ -731,6 +756,10 @@ class FormantRegressionSlicedBase(Analyzer):
         plt.clf()
         plt.cla()
 
+class FormantRegressionSaAge(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Sa', [filter.IsShanghainese(), filter.IsPosition('a')], GetAge)
+
 class FormantRegressionSbAge(FormantRegressionSlicedBase):
     def __init__(self):
         super().__init__('Sb', [filter.IsShanghainese(), filter.IsPosition('b')], GetAge)
@@ -738,6 +767,10 @@ class FormantRegressionSbAge(FormantRegressionSlicedBase):
 class FormantRegressionMbAge(FormantRegressionSlicedBase):
     def __init__(self):
         super().__init__('Mb', [filter.IsMandarin(), filter.IsPosition('b')], GetAge)
+
+class FormantRegressionSaGender(FormantRegressionSlicedBase):
+    def __init__(self):
+        super().__init__('Sa', [filter.IsShanghainese(), filter.IsPosition('a')], GetGender)
 
 class FormantRegressionSbGender(FormantRegressionSlicedBase):
     def __init__(self):
@@ -787,6 +820,7 @@ class FormantInflectionSlicedBase(Analyzer):
         plt.bar(x_all, y_front, width=kBarWidth, label='Front')
         plt.bar(x_all, y_back, bottom=np.array(y_front), width=kBarWidth, label='Back')
         plt.gca().yaxis.set_major_formatter(mtick.PercentFormatter(1))
+        plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
         plt.title(full_group_name)
         plt.savefig(output_dir / (full_group_name + '.png'),
                     bbox_inches="tight")
