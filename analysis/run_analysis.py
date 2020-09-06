@@ -386,9 +386,194 @@ CONDITIONS_C = [
     (condition.Condition(['S_c_a_c1', 'S_c_b_c2'], ['11', '12', '13', '14', '15']),
      CONDITIONS_8_GENDER
      ),
+    # 10a
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4']),
+     CONDITIONS_8_AGE
+     ),
+    # 10b
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['01', '02']),
+     CONDITIONS_8_AGE
+     ),
+    # 10c
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['03', '04', '05', '06']),
+     CONDITIONS_8_AGE
+     ),
+    # 10d
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['07', '08', '09']),
+     CONDITIONS_8_AGE
+     ),
+    # 10e
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['10']),
+     CONDITIONS_8_AGE
+     ),
+    # 11a
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4']),
+     CONDITIONS_8_GENDER
+     ),
+    # 11b
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['01', '02']),
+     CONDITIONS_8_GENDER
+     ),
+    # 11c
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['03', '04', '05', '06']),
+     CONDITIONS_8_GENDER
+     ),
+    # 11d
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['07', '08', '09']),
+     CONDITIONS_8_GENDER
+     ),
+    # 11e
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c4'], ['10']),
+     CONDITIONS_8_GENDER
+     ),
+    # 12
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2vs'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 13
+    (condition.Condition(['S_c_a_c1', 'S_c_b_c2vs'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 14a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2']),
+     CONDITIONS_8_AGE
+     ),
+    # 14b
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['01', '02']),
+     CONDITIONS_8_AGE
+     ),
+    # 14c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['03', '04', '05', '06']),
+     CONDITIONS_8_AGE
+     ),
+    # 14d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['07', '08', '09']),
+     CONDITIONS_8_AGE
+     ),
+    # 14e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['10']),
+     CONDITIONS_8_AGE
+     ),
+    # 14f
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 15a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2']),
+     CONDITIONS_8_GENDER
+     ),
+    # 15b
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['01', '02']),
+     CONDITIONS_8_GENDER
+     ),
+    # 15c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['03', '04', '05', '06']),
+     CONDITIONS_8_GENDER
+     ),
+    # 15d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['07', '08', '09']),
+     CONDITIONS_8_GENDER
+     ),
+    # 15e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['10']),
+     CONDITIONS_8_GENDER
+     ),
+    # 15f
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 16a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3']),
+     CONDITIONS_8_AGE
+     ),
+    # 16b
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['01', '02']),
+     CONDITIONS_8_AGE
+     ),
+    # 16c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['03', '04', '05', '06']),
+     CONDITIONS_8_AGE
+     ),
+    # 16d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['07', '08', '09']),
+     CONDITIONS_8_AGE
+     ),
+    # 16e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['10']),
+     CONDITIONS_8_AGE
+     ),
+    # 16f
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 17a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3']),
+     CONDITIONS_8_GENDER
+     ),
+    # 17b
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['01', '02']),
+     CONDITIONS_8_GENDER
+     ),
+    # 17c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['03', '04', '05', '06']),
+     CONDITIONS_8_GENDER
+     ),
+    # 17d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['07', '08', '09']),
+     CONDITIONS_8_GENDER
+     ),
+    # 17e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['10']),
+     CONDITIONS_8_GENDER
+     ),
+    # 17f
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c3'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 18a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4']),
+     CONDITIONS_8_AGE
+     ),
+    # 18c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['03', '04', '05', '06']),
+     CONDITIONS_8_AGE
+     ),
+    # 18d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['07', '08', '09']),
+     CONDITIONS_8_AGE
+     ),
+    # 18e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['10']),
+     CONDITIONS_8_AGE
+     ),
+    # 19a
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4']),
+     CONDITIONS_8_GENDER
+     ),
+    # 19c
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['03', '04', '05', '06']),
+     CONDITIONS_8_GENDER
+     ),
+    # 19d
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['07', '08', '09']),
+     CONDITIONS_8_GENDER
+     ),
+    # 19e
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c4'], ['10']),
+     CONDITIONS_8_GENDER
+     ),
+    # 20
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2vs'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 21
+    (condition.Condition(['S_c_a_c2', 'S_c_b_c2vs'], ['11', '12', '13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
 ]
 
-for c, analyzers in CONDITIONS_C:
+ALL_CONDITIONS = CONDITIONS_A + CONDITIONS_C
+for c, analyzers in ALL_CONDITIONS:
     df_formant = LoadFormantData()
     df = FilterFormant(df_formant, c)
 
