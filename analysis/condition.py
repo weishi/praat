@@ -1,13 +1,18 @@
+import numpy as np
+
 class Condition(object):
     def __init__(self, user_condition_arr, word_condition_arr=[]):
-        self.user_condition = set()
+        self.user_condition = []
         for uc in user_condition_arr:
-          self.user_condition.add(uc)
+          conds = uc.split(',')
+          if len(self.user_condition) == 0:
+            for i in range(len(conds)):
+              self.user_condition.append(set())
+          for i, c in enumerate(conds):
+            self.user_condition[i].add(c)
         self.word_condition = set()
         for wc in word_condition_arr:
           self.word_condition.add(wc)
-        # assert row_condition == 'SaSb' or row_condition == 'SbMb'
-        # self.row_condition = row_condition
         word_name = 'all'
         if len(self.word_condition) > 0:
           word_name = 'w'.join(self.word_condition)
@@ -15,9 +20,15 @@ class Condition(object):
         
 
     def IsMatchedUser(self, key, vals):
-        for c in self.user_condition:
-            if c not in vals:
-                return False
+        is_any_matched = []
+        for uc_set in self.user_condition:
+          is_matched = True
+          for uc in uc_set:
+            if uc not in vals:
+              is_matched = False
+          is_any_matched.append(is_matched)
+        if not np.any(is_any_matched):
+          return False
         if len(self.word_condition) > 0:
           if self.GetWord(key) not in self.word_condition:
             return False

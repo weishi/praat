@@ -571,9 +571,172 @@ CONDITIONS_C = [
      CONDITIONS_8_AGE
      ),
 ]
+CONDITIONS_D = [
+    # 1
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 2
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 3
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     [
+        analyzer.FormantQuantilesF1F2SaSb(),
+        analyzer.FormantRegressionSa(),
+        analyzer.FormantRegressionSb(),
+    ]),
+    # 4a
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     CONDITIONS_8_AGE
+     ),
+    # 4b
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], ['01', '03']),
+     CONDITIONS_8_AGE
+     ),
+    # 4c
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], ['04']),
+     CONDITIONS_8_AGE
+     ),
+    # 4d
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], 
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_AGE
+     ),
+    # 4e
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], 
+                         ['13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 5a
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     CONDITIONS_8_GENDER
+     ),
+    # 5b
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], ['01', '03']),
+     CONDITIONS_8_GENDER
+     ),
+    # 5c
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], ['04']),
+     CONDITIONS_8_GENDER
+     ),
+    # 5d
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], 
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_GENDER
+     ),
+    # 5e
+    (condition.Condition(['S_d_a_d1,S_d_a_d1n,S_d_a_d1h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'], 
+                         ['13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 6a
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h']),
+     CONDITIONS_8_AGE
+     ),
+    # 6b
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['01', '03']),
+     CONDITIONS_8_AGE
+     ),
+    # 6c
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['04']),
+     CONDITIONS_8_AGE
+     ),
+    # 6d
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_AGE
+     ),
+    # 6e
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 7a
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h']),
+     CONDITIONS_8_GENDER
+     ),
+    # 7b
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['01', '03']),
+     CONDITIONS_8_GENDER
+     ),
+    # 7c
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['04']),
+     CONDITIONS_8_GENDER
+     ),
+    # 7d
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_GENDER
+     ),
+    # 7e
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d3,S_d_b_d3n,S_d_b_d3h'],
+                         ['13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+    # 8a
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     CONDITIONS_8_AGE
+     ),
+    # 8b
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['01', '03']),
+     CONDITIONS_8_AGE
+     ),
+    # 8c
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['04']),
+     CONDITIONS_8_AGE
+     ),
+    # 8d
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_AGE
+     ),
+    # 8e
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['13', '14', '15']),
+     CONDITIONS_8_AGE
+     ),
+    # 9a
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9b
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['01', '03']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9c
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['04']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9d
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['05', '06', '07', '08', '09', '10', '11']),
+     CONDITIONS_8_GENDER
+     ),
+    # 9e
+    (condition.Condition(['S_d_a_d2,S_d_a_d2n,S_d_a_d2h', 'S_d_b_d2,S_d_b_d2n,S_d_b_d2h'],
+                         ['13', '14', '15']),
+     CONDITIONS_8_GENDER
+     ),
+]
 
-ALL_CONDITIONS = CONDITIONS_A + CONDITIONS_C
-for c, analyzers in ALL_CONDITIONS:
+CONDITIONS_ALL = CONDITIONS_A + CONDITIONS_C + CONDITIONS_D
+for c, analyzers in CONDITIONS_ALL:
     df_formant = LoadFormantData()
     df = FilterFormant(df_formant, c)
 
