@@ -434,12 +434,26 @@ class FormantRegressionBase(Analyzer):
         line2 = np.poly1d(coeff2)
         line1dd = np.polyder(line1, 2)
         line2dd = np.polyder(line2, 2)
+        # line1ddd = np.polyder(line1, 3)
+        # line2ddd = np.polyder(line2, 3)
         line1dd_max = minimize_scalar(-line1dd,
                                       bounds=(0, 8), method='bounded')
         line2dd_max = minimize_scalar(-line2dd,
                                       bounds=(0, 8), method='bounded')
         inflection1 = line1dd_max.x
         inflection2 = line2dd_max.x
+        # line1ddd_max_left = minimize_scalar(-line1ddd,
+        #                               bounds=(0, inflection1), method='bounded')
+        # line1ddd_max_right = minimize_scalar(-line1ddd,
+        #                               bounds=(inflection1, 8), method='bounded')
+        # line2ddd_max_left = minimize_scalar(-line2ddd,
+        #                               bounds=(0, inflection2), method='bounded')
+        # line2ddd_max_right = minimize_scalar(-line2ddd,
+        #                               bounds=(inflection2, 8), method='bounded')
+        # inflection1d_left = line1ddd_max_left.x
+        # inflection1d_right = line1ddd_max_right.x
+        # inflection2d_left = line2ddd_max_left.x
+        # inflection2d_right = line2ddd_max_right.x
         df_inflex = pd.DataFrame(
             data={'f1_inflection': [inflection1], 'f2_inflection': [inflection2]})
         df_inflex.to_csv(output_dir / (full_group_name + '.csv'), index=False)
@@ -466,8 +480,22 @@ class FormantRegressionBase(Analyzer):
                     bbox_inches="tight")
         plt.clf()
         plt.cla()
-        output_debug_path = output_dir / (full_group_name + '.debug.csv')
-        df.to_csv(output_debug_path, index=False)
+
+        # Plot 3rd deriv and inflection
+        # plt.plot(x, line1ddd(x), label='F1 3rd deriv')
+        # plt.plot(x, line2ddd(x), label='F2 3rd deriv')
+        # plt.axvline(x=inflection1d_left, linestyle=':', label='F1 inf L')
+        # plt.axvline(x=inflection1d_right, linestyle=':', label='F1 inf R')
+        # plt.axvline(x=inflection2d_left, linestyle='-.', label='F2 inf L')
+        # plt.axvline(x=inflection2d_right, linestyle='-.', label='F2 inf R')
+        # plt.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+        # plt.title(full_group_name)
+        # plt.savefig(output_dir / (full_group_name + '.inflection3rd.png'),
+                    # bbox_inches="tight")
+        # plt.clf()
+        # plt.cla()
+        # output_debug_path = output_dir / (full_group_name + '.debug.csv')
+        # df.to_csv(output_debug_path, index=False)
 
 
 class FormantRegressionSa(FormantRegressionBase):
