@@ -271,7 +271,9 @@ CONDITIONS_8_AGE = [
     analyzer.FormantQuantilesF2SbAge(),
     analyzer.FormantRegressionSaAge(),
     analyzer.FormantRegressionSbAge(),
+    analyzer.FormantInflectionF1SaAge(),
     analyzer.FormantInflectionF1SbAge(),
+    analyzer.FormantInflectionF2SaAge(),
     analyzer.FormantInflectionF2SbAge(),
 ]
 CONDITIONS_8_GENDER = [
@@ -281,7 +283,9 @@ CONDITIONS_8_GENDER = [
     analyzer.FormantQuantilesF2SbGender(),
     analyzer.FormantRegressionSaGender(),
     analyzer.FormantRegressionSbGender(),
+    analyzer.FormantInflectionF1SaGender(),
     analyzer.FormantInflectionF1SbGender(),
+    analyzer.FormantInflectionF2SaGender(),
     analyzer.FormantInflectionF2SbGender(),
 ]
 CONDITIONS_C = [

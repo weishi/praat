@@ -855,9 +855,19 @@ class FormantInflectionSlicedBase(Analyzer):
         plt.clf()
         plt.cla()
 
+class FormantInflectionF1SaAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
+                         GetAge)
+
 class FormantInflectionF1SbAge(FormantInflectionSlicedBase):
     def __init__(self):
         super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetAge)
+
+class FormantInflectionF2SaAge(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
                          GetAge)
 
 class FormantInflectionF2SbAge(FormantInflectionSlicedBase):
@@ -875,9 +885,19 @@ class FormantInflectionF2MbAge(FormantInflectionSlicedBase):
         super().__init__('F2', 'Mb', [filter.IsMandarin(), filter.IsPosition('b')],
                          GetAge)
 
+class FormantInflectionF1SaGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F1', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
+                         GetGender)
+
 class FormantInflectionF1SbGender(FormantInflectionSlicedBase):
     def __init__(self):
         super().__init__('F1', 'Sb', [filter.IsShanghainese(), filter.IsPosition('b')],
+                         GetGender)
+
+class FormantInflectionF2SaGender(FormantInflectionSlicedBase):
+    def __init__(self):
+        super().__init__('F2', 'Sa', [filter.IsShanghainese(), filter.IsPosition('a')],
                          GetGender)
 
 class FormantInflectionF2SbGender(FormantInflectionSlicedBase):
