@@ -601,29 +601,38 @@ class FormantInflectionSaSb(FormantInflectionBase):
             'Sb': [filter.IsShanghainese(), filter.IsPosition('b')],
         })
 
-def GetAge(row):
+class GetAge:
+  def GetSlice(self, row):
     comps = row['Filename'].split('_')
     assert len(comps) == 5 or len(comps) == 6
     age_gender = int(comps[2])
     if 1 <= age_gender <= 20:
-        return '1.Senior'
+        return 'Senior'
     if 21 <= age_gender <= 40:
-        return '2.Adult'
+        return 'Adult'
     if 41 <= age_gender <= 60:
-        return '3.Youth'
+        return 'Youth'
     if 61 <= age_gender <= 80:
-        return '4.Child'
+        return 'Child'
     raise NotImplementedError
 
+  def GetOrder(self):
+    return ['Senior', 'Adult', 'Youth', 'Child']
 
-def GetGender(row):
+
+class GetGender:
+  def GetSlice(self, row):
     comps = row['Filename'].split('_')
     assert len(comps) == 5 or len(comps) == 6
     age_gender = int(comps[2])
     if age_gender % 2 == 0:
-        return '1.Female'
+        return 'Female'
     else:
-        return '2.Male'
+        return 'Male'
+
+  def GetOrder(self):
+    return ['Female', 'Male']
+
 
 
 class FormantQuantilesSlicedBase(Analyzer):
@@ -631,19 +640,24 @@ class FormantQuantilesSlicedBase(Analyzer):
         self.formant = formant
         self.word = word
         self.word_filters = word_filters
-        self.slicer = slicer
+        self.slicer = slicer()
 
     def RunAnalysis(self, df, group_name, output_dir):
         matched_rows_map = {}
         for _, row in df.iterrows():
             is_all_matched = [f.IsMatched(row) for f in self.word_filters]
             if np.all(is_all_matched):
-                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+                matched_rows_map.setdefault(self.slicer.GetSlice(row), []).append(row)
 
         x = []
         y = []
         full_group_name = group_name + '@@' + self.formant+'_'+self.word
-        for key, matched_rows in matched_rows_map.items():
+        for key in self.slicer.GetOrder():
+            if key not in matched_rows_map:
+              x.append(key)
+              y.append(0)
+              continue
+            matched_rows = matched_rows_map[key]
             mdf = pd.DataFrame(matched_rows)
             mdf = ComputeF1F2Diff(mdf)
             df_mean = pd.DataFrame(
@@ -733,26 +747,33 @@ class FormantRegressionSlicedBase(Analyzer):
     def __init__(self, word, word_filters, slicer):
         self.word = word
         self.word_filters = word_filters
-        self.slicer = slicer
+        self.slicer = slicer()
 
     def RunAnalysis(self, df, group_name, output_dir):
         matched_rows_map = {}
         for _, row in df.iterrows():
             is_all_matched = [f.IsMatched(row) for f in self.word_filters]
             if np.all(is_all_matched):
-                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+                matched_rows_map.setdefault(self.slicer.GetSlice(row), []).append(row)
 
         full_group_name = group_name + '@@' + self.word
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        z_label = sorted(matched_rows_map.keys())
+        z_label = self.slicer.GetOrder()
         cmap = plt.get_cmap('viridis')
         colors = cmap(np.linspace(0, 1, len(z_label)))
-        for key, matched_rows in matched_rows_map.items():
+        for key in self.slicer.GetOrder():
+            x = np.arange(0, 9)
+            color = colors[z_label.index(key)]
+            z = z_label.index(key)
+            if key not in matched_rows_map:
+              dummy_y = np.zeros(9)
+              ax.plot(x, dummy_y, zs=z, zdir='x', c=color)
+              continue
+            matched_rows = matched_rows_map[key]
             mdf = pd.DataFrame(matched_rows)
             s_f1 = mdf.loc[:, mdf.columns.str.startswith("barkF1")].mean()
             s_f2 = mdf.loc[:, mdf.columns.str.startswith("barkF2")].mean()
-            x = np.arange(0, 9)
             y1 = s_f1['barkF1_2': 'barkF1_10'].to_numpy(dtype='float')
             y2 = s_f2['barkF2_2': 'barkF2_10'].to_numpy(dtype='float')
             coeff1 = np.polyfit(x, y1, 4)
@@ -769,8 +790,6 @@ class FormantRegressionSlicedBase(Analyzer):
             inflection2 = line2dd_max.x
             inflection1y = line1(inflection1)
             inflection2y = line2(inflection2)
-            color = colors[z_label.index(key)]
-            z = z_label.index(key)
             ax.plot(x, y1, zs=z, zdir='x', c=color, label='F1', linewidth=3.0)
             ax.plot(x, y2, zs=z, zdir='x', c=color, label='F2')
             ax.plot([inflection1, inflection1], [inflection1y-1, inflection1y+1], zs=z, zdir='x', c='black')
@@ -815,20 +834,26 @@ class FormantInflectionSlicedBase(Analyzer):
         self.formant = formant
         self.word = word
         self.word_filters = word_filters
-        self.slicer = slicer
+        self.slicer = slicer()
 
     def RunAnalysis(self, df, group_name, output_dir):
         matched_rows_map = {}
         for _, row in df.iterrows():
             is_all_matched = [f.IsMatched(row) for f in self.word_filters]
             if np.all(is_all_matched):
-                matched_rows_map.setdefault(self.slicer(row), []).append(row)
+                matched_rows_map.setdefault(self.slicer.GetSlice(row), []).append(row)
 
         x_all = []
         y_front = []
         y_back = []
         full_group_name = group_name + '@@' + self.formant+'_'+self.word
-        for key, matched_rows in matched_rows_map.items():
+        for key in self.slicer.GetOrder():
+            x_all.append(key)
+            if key not in matched_rows_map:
+              y_front.append(0)
+              y_back.append(0)
+              continue
+            matched_rows = matched_rows_map[key]
             mdf = pd.DataFrame(matched_rows)
             formant_prefix = 'bark' + self.formant
             f = mdf.loc[:, mdf.columns.str.startswith(formant_prefix)].mean()
@@ -840,7 +865,6 @@ class FormantInflectionSlicedBase(Analyzer):
             linedd_max = minimize_scalar(-linedd,
                                           bounds=(0, 8), method='bounded')
             inflection = linedd_max.x
-            x_all.append(key)
             y_front.append(inflection / 8.0)
             y_back.append(1 - inflection / 8.0)
 

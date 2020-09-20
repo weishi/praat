@@ -295,6 +295,7 @@ CONDITIONS_C = [
         analyzer.FormantQuantilesF1F2SaSb(),
         analyzer.FormantRegressionSa(),
         analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
     ]),
     # 2
     (condition.Condition(['S_c_a_c1', 'S_c_b_c4']),
@@ -302,6 +303,7 @@ CONDITIONS_C = [
         analyzer.FormantQuantilesF1F2SaSb(),
         analyzer.FormantRegressionSa(),
         analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
     ]),
     # 3
     (condition.Condition(['S_c_a_c1', 'S_c_b_c2vs']),
@@ -309,6 +311,7 @@ CONDITIONS_C = [
         analyzer.FormantQuantilesF1F2SaSb(),
         analyzer.FormantRegressionSa(),
         analyzer.FormantRegressionSb(),
+        analyzer.FormantInflectionSaSb(),
     ]),
     # 4
     (condition.Condition(['S_c_a_c2', 'S_c_b_c2']),
