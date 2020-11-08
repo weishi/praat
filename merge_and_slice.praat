@@ -26,7 +26,7 @@ for j to numberOfIntervals
     endTime = Get end point: 1, j
     midTime = (startTime + endTime) / 2
     Insert boundary... 2 midTime
-    appendInfoLine: label$, ", ", startTime, " ~ ", midTime, " ~ ", endTime
+    # appendInfoLine: label$, ", ", startTime, " ~ ", midTime, " ~ ", endTime
   endif
 endfor
 
@@ -55,7 +55,7 @@ for j to numberOfIntervals
     Extract part... startTime endTime no
     Write to text file... 'gridpath$'
 
-    appendInfoLine: soundpath$
+    # appendInfoLine: soundpath$
     selectObject: "Sound " + input$
     Extract part: startTime, endTime, windowShape$, relWidth, preserveTimes 
     Write to WAV file... 'soundpath$'

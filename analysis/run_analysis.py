@@ -193,10 +193,6 @@ def AnalyzeHnr(df, grp):
             analysis.RunAnalysis(matched_df, group_name, output_dir)
 
 
-input_base_dir = Path('./test40/')
-output_base_dir = input_base_dir / 'output/'
-shutil.rmtree(output_base_dir, ignore_errors=True)
-
 CONDITIONS_A = [
     (condition.Condition(['S_a_a_a1', 'S_a_b_a1']),
      [
@@ -741,6 +737,10 @@ CONDITIONS_D = [
      CONDITIONS_8_GENDER
      ),
 ]
+
+input_base_dir = Path('./test40/')
+output_base_dir = input_base_dir / 'output/'
+shutil.rmtree(output_base_dir, ignore_errors=True)
 
 CONDITIONS_ALL = CONDITIONS_A + CONDITIONS_C + CONDITIONS_D
 for c, analyzers in CONDITIONS_ALL:
