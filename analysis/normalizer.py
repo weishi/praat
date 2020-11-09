@@ -171,13 +171,73 @@ def Normalization(df):
   df['F1_6_p'] = df['F1_6_Z'] * df['F1_6_R_norm']
   df['F1_6_pp'] = df.groupby(['Table', 'PersonLang'])['F1_6_p'].transform('mean')    
   df['F1_6_norm_final'] = df['F1_6_p'] - (df['F1_6_pp'] - df['F1_6_Fi_bar'])
-
-  # k=16 vowel
-  # i = formant, fixed per column, such as F1_6
-  # j = each row
-  # R^norm_i = sigma_k (|F_mean_k - F_mean|) / sigma_k(|Z_k_mean - Z_mean|)
   return df
 
+def NormalizeColumn(df, col):
+  df[col + '_u'] = df.groupby('Table')[col + ''].transform('mean')    
+  df[col + '_std'] = df.groupby('Table')[col + ''].transform('std')    
+  df[col + '_Z'] = (df[col + ''] - df[col + '_u']) / df[col + '_std']
+  print(df)
+  # A
+  vowel_Fki = ['Sa@a1', 'Sb@a1','Sb@a2', 'M@a2', 'B@a2', 'norm@a', 'norm@i', 'norm@u']
+  df_Fki_bar = df.groupby(['Vowel', 'Gender'])[col + ''].mean()   
+  print(df_Fki_bar)
+  df_Zki_bar = df.groupby(['Vowel', 'Gender'])[col + '_Z'].mean()   
+  df_Fi_bar = df.groupby(['IsFiRows'])[col + ''].mean()   
+  print(df_Fi_bar)
+  df_Zi_bar = df.groupby(['IsFiRows'])[col + '_Z'].mean()   
+  Fi_bar = df_Fi_bar['Yes']
+  Zi_bar = df_Zi_bar['Yes']
+  sum_F_male = 0
+  sum_F_female = 0
+  sum_Z_male = 0
+  sum_Z_female = 0
+  print('Male - Fi_bar:' + str(Fi_bar))
+  print('Male - Zi_bar:' + str(Zi_bar))
+  for vowel in vowel_Fki:
+      try: 
+        Fki_bar = df_Fki_bar[vowel]['M']
+        print(vowel + ' - Male - Fki_bar:' + str(Fki_bar))
+        sum_F_male += abs(Fki_bar - Fi_bar)
+      except KeyError:
+        print(vowel + ' - Male - No F')
+      try: 
+        Zki_bar = df_Zki_bar[vowel]['M']
+        print(vowel + ' - Male - Zki_bar:' + str(Zki_bar))
+        sum_Z_male += abs(Zki_bar - Zi_bar)
+      except KeyError:
+        print(vowel + ' - Male - No Z')
+      try: 
+        Fki_bar = df_Fki_bar[vowel]['F']
+        print(vowel + ' - Female - Fki_bar:' + str(Fki_bar))
+        sum_F_female += abs(Fki_bar - Fi_bar)
+      except KeyError:
+        print(vowel + ' - Female - No F')
+      try: 
+        Zki_bar = df_Zki_bar[vowel]['F']
+        print(vowel + ' - Female - Zki_bar:' + str(Zki_bar))
+        sum_Z_female += abs(Zki_bar - Zi_bar)
+      except KeyError:
+        print(vowel + ' - Female - No Z')
+  print('sum_F_male: %f, sum_Z_male: %f' % (sum_F_male, sum_Z_male))
+  print('sum_F_female: %f, sum_Z_female: %f' % (sum_F_female, sum_Z_female))
+  R_male = sum_F_male / sum_Z_male
+  R_female = sum_F_female / sum_Z_female
+  print('R_male: %f, R_female: %f' % (R_male, R_female))
+  df[col + '_R_norm'] = df.apply(addRnorm, args=(R_male, R_female), axis=1)
+  df[col + '_Fi_bar'] = Fi_bar
+  df[col + '_p'] = df[col + '_Z'] * df[col + '_R_norm']
+  df[col + '_Fijk_bar'] = df.groupby(['Table', 'PersonLang'])[col + '_p'].transform('mean')    
+  df[col + '_pp'] = df[col + '_p'] - (df[col + '_Fijk_bar'] - df[col + '_Fi_bar'])
+  df[col + '_pp_bark'] = 26.81 / (1 + 1960 / df[col + '_pp']) - 0.53
+  return df
+
+def ComputeDelta(df):
+  df['deltaF1'] = df['F1_6_pp'] - df['F1_16_pp']
+  df['deltaF2'] = df['F2_6_pp'] - df['F2_16_pp']
+  df['delta_barkF1'] = df['F1_6_pp_bark'] - df['F1_16_pp_bark']
+  df['delta_barkF2'] = df['F2_6_pp_bark'] - df['F2_16_pp_bark']
+  return df
 
 input_base_dir = Path('./testall/')
 output_base_dir = input_base_dir / 'output/'
@@ -187,8 +247,12 @@ output_base_dir.mkdir(parents=True, exist_ok=True)
 cols1 = ['F1_' + str(i) for i in [6, 16]]
 cols2 = ['F2_' + str(i) for i in [6, 16]]
 kCols = cols1 + cols2
-kCols = ['F1_6']
+# kCols = ['F1_6']
 df_formant = LoadFormantData()
-df_formant = Normalization(df_formant)
+df_formant = NormalizeColumn(df_formant, 'F1_6')
+df_formant = NormalizeColumn(df_formant, 'F1_16')
+df_formant = NormalizeColumn(df_formant, 'F2_6')
+df_formant = NormalizeColumn(df_formant, 'F2_16')
+df_formant = ComputeDelta(df_formant)
 df_formant.to_csv(output_base_dir / 'normalized.csv', index=False)
 
