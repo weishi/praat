@@ -26,6 +26,8 @@ def IsValid(row):
   lang = comps[0]
   if lang.startswith('norm'):
     return True
+  if int(comps[3]) == 13:
+    return False
   if lang.startswith('S'):
     return 'S'+comps[4]+'='+row['Annotation'] in ('Sa=a1', 'Sb=a1', 'Sb=a2')
   if lang.startswith('M') or lang.startswith('B'):
@@ -93,9 +95,9 @@ def LoadFormantData():
     for input in sorted(input_base_dir.rglob('*.CSV')):
         print(input)
         single_df = pd.read_csv(input, converters={
-            'Annotation': removeChars}, na_values=['--undefined--'])
+            'Annotation': removeChars}, na_values=['--undefined--', 'null'], skipinitialspace=True, sep="\s*[,]\s*", engine='python')
         single_df.drop(single_df.filter(regex="Unname"), axis=1, inplace=True)
-        clean_df = single_df.dropna(subset=kCols)
+        clean_df = single_df.dropna(subset=['Annotation'] + kCols)
         clean_df['Table'] = input
         num_nan = len(single_df) - len(clean_df)
         if num_nan > 0:
@@ -261,6 +263,8 @@ output_base_dir.mkdir(parents=True, exist_ok=True)
 
 cols1 = ['F1_' + str(i) for i in [6, 16]]
 cols2 = ['F2_' + str(i) for i in [6, 16]]
+cols1 = ['F1_' + str(i) for i in range(1, 22)]
+cols2 = ['F2_' + str(i) for i in range(1, 22)]
 kCols = cols1 + cols2
 # kCols = ['F1_6']
 df_formant = LoadFormantData()
