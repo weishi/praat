@@ -20,6 +20,19 @@ def rchop(s, suffix):
         return s[:-len(suffix)]
     return s
 
+def IsValid(row):
+  comps = row['Filename'].split('_')
+  assert len(comps) == 5 or len(comps) == 6
+  lang = comps[0]
+  if lang.startswith('norm'):
+    return True
+  if lang.startswith('S'):
+    return 'S'+comps[4]+'='+row['Annotation'] in ('Sa=a1', 'Sb=a1', 'Sb=a2')
+  if lang.startswith('M') or lang.startswith('B'):
+    return row['Annotation'] == 'a2'
+  print(row)
+  raise NotImplementedError
+
 def GetVowel(row):
   comps = row['Filename'].split('_')
   assert len(comps) == 5 or len(comps) == 6
@@ -77,7 +90,7 @@ def GetIsFiRows(row):
 def LoadFormantData():
     all_data = []
 
-    for input in sorted(input_base_dir.rglob('*.csv')):
+    for input in sorted(input_base_dir.rglob('*.CSV')):
         print(input)
         single_df = pd.read_csv(input, converters={
             'Annotation': removeChars}, na_values=['--undefined--'])
@@ -91,6 +104,8 @@ def LoadFormantData():
     df = pd.concat(all_data, ignore_index=True)
     df = df[df.Annotation != 'null']
     # df.drop_duplicates(subset=['Filename', 'Annotation'], keep='first', inplace=True)
+    df['IsValid'] = df.apply (lambda row: IsValid(row), axis=1)
+    df = df[df.IsValid == True]
     df['Vowel'] = df.apply (lambda row: GetVowel(row), axis=1)
     df['PersonLang'] = df.apply (lambda row: GetPersonLang(row), axis=1)
     df['Gender'] = df.apply (lambda row: GetGender(row), axis=1)
@@ -239,7 +254,7 @@ def ComputeDelta(df):
   df['delta_barkF2'] = df['F2_6_pp_bark'] - df['F2_16_pp_bark']
   return df
 
-input_base_dir = Path('./testall/')
+input_base_dir = Path('./item_a/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 output_base_dir.mkdir(parents=True, exist_ok=True)
