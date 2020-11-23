@@ -3,10 +3,7 @@ from pathlib import Path
 import itertools
 import numpy as np
 import pandas as pd
-import filter as ft
-import groups
-import analyzer
-import condition
+from scipy.optimize import minimize_scalar
 
 
 def removeChars(s):
@@ -92,7 +89,7 @@ def GetIsFiRows(row):
 def LoadFormantData():
     all_data = []
 
-    for input in sorted(input_base_dir.rglob('*.CSV')):
+    for input in sorted(input_base_dir.glob('*.CSV')):
         print(input)
         single_df = pd.read_csv(input, converters={
             'Annotation': removeChars}, na_values=['--undefined--', 'null'], skipinitialspace=True, sep="\s*[,]\s*", engine='python')
@@ -256,6 +253,20 @@ def ComputeDelta(df):
   df['delta_barkF2'] = df['F2_6_pp_bark'] - df['F2_16_pp_bark']
   return df
 
+def GetBreak(row, formant):
+  x = np.arange(0, 19)
+  y = row[formant+'_2': formant+'_20'].to_numpy(dtype='float')
+  coeff = np.polyfit(x, y, 4)
+  line = np.poly1d(coeff)
+  linedd = np.polyder(line, 2)
+  linedd_max = minimize_scalar(-linedd, bounds=(0, 19), method='bounded')
+  return linedd_max.x / 19.0
+
+def ComputeBreak(df):
+  df['breakF1'] = df.apply (lambda row: GetBreak(row,'F1'), axis=1)
+  df['breakF2'] = df.apply (lambda row: GetBreak(row,'F2'), axis=1)
+  return df
+
 input_base_dir = Path('./item_a/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
@@ -266,8 +277,8 @@ cols2 = ['F2_' + str(i) for i in [6, 16]]
 cols1 = ['F1_' + str(i) for i in range(1, 22)]
 cols2 = ['F2_' + str(i) for i in range(1, 22)]
 kCols = cols1 + cols2
-# kCols = ['F1_6']
 df_formant = LoadFormantData()
+df_formant = ComputeBreak(df_formant)
 df_formant = NormalizeColumn(df_formant, 'F1_6')
 df_formant = NormalizeColumn(df_formant, 'F1_16')
 df_formant = NormalizeColumn(df_formant, 'F2_6')
