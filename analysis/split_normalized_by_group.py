@@ -63,20 +63,24 @@ def WriteGroupCsv(df, output_dir, label_cond, word_cond, filename):
 
 
 input_base_dir = Path('./item_a/output/')
-output_base_dir = input_base_dir / 'output_group/'
+output_base_dir = Path('./item_a/output_group/')
 shutil.rmtree(output_base_dir, ignore_errors=True)
 output_base_dir.mkdir(parents=True, exist_ok=True)
 
 df_formant = LoadFormantData()
 output_df = []
-WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a1'], ['Sa=a1'], 'Sa=a1@Sb=a1__Sa@a1')
-WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a1'], ['Sb=a1'], 'Sa=a1@Sb=a1__Sb@a1')
-WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a2'], ['Sa=a1'], 'Sa=a1@Sb=a2__Sa@a1')
-WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a2'], ['Sb=a2'], 'Sa=a1@Sb=a2__Sb@a2')
-WriteGroupCsv(df_formant, output_base_dir, ['Sb=a1'], ['Mb=a2'], 'Sb=a1__Mb@a2')
-WriteGroupCsv(df_formant, output_base_dir, ['Sb=a2'], ['Mb=a2'], 'Sb=a2__Mb@a2')
-WriteGroupCsv(df_formant, output_base_dir, [], ['Sa=a1'], 'all_Sa@a1')
-WriteGroupCsv(df_formant, output_base_dir, [], ['Sb=a1'], 'all_Sb@a1')
-WriteGroupCsv(df_formant, output_base_dir, [], ['Sb=a2'], 'all_Sb@a2')
+# delta
+WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a1'], ['Sa=a1'], 'delta_Sa=a1@Sb=a1__Sa@a1')
+WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a1'], ['Sb=a1'], 'delta_Sa=a1@Sb=a1__Sb@a1')
+WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a2'], ['Sa=a1'], 'delta_Sa=a1@Sb=a2__Sa@a1')
+WriteGroupCsv(df_formant, output_base_dir, ['Sa=a1', 'Sb=a2'], ['Sb=a2'], 'delta_Sa=a1@Sb=a2__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a1'], ['Mb=a2'], 'delta_Sb=a1__Mb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a2'], ['Mb=a2'], 'delta_Sb=a2__Mb@a2')
+WriteGroupCsv(df_formant, output_base_dir, [], ['Sb=a2'], 'delta_all__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, [], ['Mb=a2', 'Bb=a2'], 'delta_all__Mb@a2_Bb@a2')
 
-WriteGroupCsv(df_formant, output_base_dir, [], ['Mb=a2', 'Bb=a2'], 'all_Mb@a2_Bb@a2')
+# break
+WriteGroupCsv(df_formant, output_base_dir, [], ['Sb=a2'], 'break_all__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a1'], ['Mb=a2'], 'break_Sb=a1__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a2'], ['Mb=a2'], 'break_Sb=a2__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, [], ['Mb=a2', 'Bb=a2'], 'break_all__Mb@a2_Bb@a2')
