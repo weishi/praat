@@ -1,0 +1,51 @@
+when Sa=Sb=a1 deltaF1@Sa@a1
+when Sa=Sb=a1 deltaF2@Sa@a1
+when Sa=Sb=a1 deltabarkF1@Sa@a1
+when Sa=Sb=a1 deltabarkF2@Sa@a1
+
+when Sa=Sb=a1 deltaF1@Sb@a1
+when Sa=Sb=a1 deltaF2@Sb@a1
+when Sa=Sb=a1 deltabarkF1@Sb@a1
+when Sa=Sb=a1 deltabarkF2@Sb@a1
+
+when Sa=a1&Sb=a2 deltaF1@Sa@a1
+when Sa=a1&Sb=a2 deltaF2@Sa@a1
+when Sa=a1&Sb=a2 deltabarkF1@Sa@a1
+when Sa=a1&Sb=a2 deltabarkF2@Sa@a1
+
+when Sa=a1&Sb=a2 deltaF1@Sb@a2
+when Sa=a1&Sb=a2 deltaF2@Sb@a2
+when Sa=a1&Sb=a2 deltabarkF1@Sb@a2
+when Sa=a1&Sb=a2 deltabarkF2@Sb@a2
+
+when Sb=a1 deltaF1@M@a2
+when Sb=a1 deltaF2@M@a2
+when Sb=a1 deltabarkF1@M@a2
+when Sb=a1 deltabarkF2@M@a2
+
+when Sb=a2 deltaF1@M@a2
+when Sb=a2 deltaF2@M@a2
+when Sb=a2 deltabarkF1@M@a2
+when Sb=a2 deltabarkF2@M@a2
+
+deltaF1@Sb@a2
+deltaF2@Sb@a2
+
+breakF1@Sb@a2
+breakF2@Sb@a2
+
+when Sb=a1 breakF1@M@a2
+when Sb=a1 breakF2@M@a2
+
+when Sb=a2 breakF1@M@a2
+when Sb=a2 breakF2@M@a2
+
+B
+===========
+deltaF1@M@a2 or deltaF1@B@a2
+deltaF2@M@a2 or deltaF2@B@a2
+deltabarkF1@M@a2 or deltabarkF1@B@a2
+deltabarkF2@M@a2 or deltabarkF2@B@a2
+
+breakF1@M@a2 or breakF1@B@a2
+breakF2@M@a2 or breakF2@B@a2

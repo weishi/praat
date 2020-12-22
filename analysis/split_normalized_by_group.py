@@ -81,6 +81,6 @@ WriteGroupCsv(df_formant, output_base_dir, [], ['Mb=a2', 'Bb=a2'], 'delta_all__M
 
 # break
 WriteGroupCsv(df_formant, output_base_dir, [], ['Sb=a2'], 'break_all__Sb@a2')
-WriteGroupCsv(df_formant, output_base_dir, ['Sb=a1'], ['Mb=a2'], 'break_Sb=a1__Sb@a2')
-WriteGroupCsv(df_formant, output_base_dir, ['Sb=a2'], ['Mb=a2'], 'break_Sb=a2__Sb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a1'], ['Mb=a2'], 'break_Sb=a1__Mb@a2')
+WriteGroupCsv(df_formant, output_base_dir, ['Sb=a2'], ['Mb=a2'], 'break_Sb=a2__Mb@a2')
 WriteGroupCsv(df_formant, output_base_dir, [], ['Mb=a2', 'Bb=a2'], 'break_all__Mb@a2_Bb@a2')
