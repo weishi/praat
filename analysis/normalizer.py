@@ -267,7 +267,7 @@ def ComputeBreak(df):
   df['breakF2'] = df.apply (lambda row: GetBreak(row,'F2'), axis=1)
   return df
 
-input_base_dir = Path('./item_a/')
+input_base_dir = Path('./analysis/item_a/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 output_base_dir.mkdir(parents=True, exist_ok=True)
