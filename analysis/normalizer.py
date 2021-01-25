@@ -94,7 +94,19 @@ def LoadFormantData():
         single_df = pd.read_csv(input, converters={
             'Annotation': removeChars}, na_values=['--undefined--', 'null'], skipinitialspace=True, sep="\s*[,]\s*", engine='python')
         single_df.drop(single_df.filter(regex="Unname"), axis=1, inplace=True)
+        matched_rows = []
+        for _, row in single_df.iterrows():
+          comps = row['Filename'].split('_')
+          if len(comps) == 6 and comps[5] != '01':
+            print('Deduped ' + row['Filename'])
+            continue
+          if len(comps) == 5 and 'norm' in comps[0] and comps[4] != '01':
+            print('Deduped ' + row['Filename'])
+            continue
+          matched_rows.append(row)
+        single_df = pd.DataFrame(matched_rows)
         clean_df = single_df.dropna(subset=['Annotation'] + kCols)
+        clean_df = clean_df.copy()
         clean_df['Table'] = input
         num_nan = len(single_df) - len(clean_df)
         if num_nan > 0:
@@ -267,22 +279,30 @@ def ComputeBreak(df):
   df['breakF2'] = df.apply (lambda row: GetBreak(row,'F2'), axis=1)
   return df
 
-input_base_dir = Path('./analysis/item_a/')
+input_base_dir = Path('./analysis/item_a_sm/')
 output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 output_base_dir.mkdir(parents=True, exist_ok=True)
 
 cols1 = ['F1_' + str(i) for i in [6, 16]]
 cols2 = ['F2_' + str(i) for i in [6, 16]]
-cols1 = ['F1_' + str(i) for i in range(1, 22)]
-cols2 = ['F2_' + str(i) for i in range(1, 22)]
+# cols1 = ['F1_' + str(i) for i in range(1, 22)]
+# cols2 = ['F2_' + str(i) for i in range(1, 22)]
 kCols = cols1 + cols2
 df_formant = LoadFormantData()
-df_formant = ComputeBreak(df_formant)
+# df_formant = ComputeBreak(df_formant)
 df_formant = NormalizeColumn(df_formant, 'F1_6')
 df_formant = NormalizeColumn(df_formant, 'F1_16')
 df_formant = NormalizeColumn(df_formant, 'F2_6')
 df_formant = NormalizeColumn(df_formant, 'F2_16')
 df_formant = ComputeDelta(df_formant)
-df_formant.to_csv(output_base_dir / 'normalized.csv', index=False)
+output_df = pd.concat(
+            [df_formant[['Filename']],
+             df_formant[['Annotation']],
+             df_formant[['deltaF1']],
+             df_formant[['deltaF2']],
+             df_formant[['delta_barkF1']],
+             df_formant[['delta_barkF2']],
+             ], axis=1)
+output_df.to_csv(output_base_dir / 'normalized.csv', index=False)
 
