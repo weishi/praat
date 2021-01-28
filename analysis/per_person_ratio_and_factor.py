@@ -27,10 +27,11 @@ def ComputeChangeRatio(df, output_dir):
     for k,b in person_b_count.items():
       a1 = person_b_a1_count.get(k, 0)
       a2 = person_b_a2_count.get(k, 0)
-      change_ratio[int(k)] = (a2-a1)/b
+      change_ratio[int(k)] = {'sb_chg_m': (a2-a1)/b, 'sb_a2': a2, 'sb_a1_a2': a1+a2, 'sb_a2_div_a1_a2': (a2/(a1+a2))}
     output_df = pd.DataFrame.from_dict(change_ratio, orient='index')
     output_df.index.name = 'Person'
-    output_df.columns = ['sb_chg_m']
+    print(output_df)
+    # output_df.columns = ['sb_chg_m']
     return output_df
 
 input_base_dir = Path('./analysis/item_a_sm/output/')
