@@ -254,7 +254,7 @@ def NormalizeColumn(df, col):
   df[col + '_Fi_bar'] = Fi_bar
   df[col + '_p'] = df[col + '_Z'] * df[col + '_R_norm']
   df[col + '_Fijk_bar'] = df.groupby(['Table', 'PersonLang'])[col + '_p'].transform('mean')    
-  df[col + '_pp'] = df[col + '_p'] - (df[col + '_Fijk_bar'] - df[col + '_Fi_bar'])
+  df[col + '_pp'] = df[col + '_p'] + (df[col + '_Fijk_bar'] - df[col + '_Fi_bar'])
   df[col + '_pp_bark'] = 26.81 / (1 + 1960 / df[col + '_pp']) - 0.53
   return df
 
@@ -284,21 +284,24 @@ output_base_dir = input_base_dir / 'output/'
 shutil.rmtree(output_base_dir, ignore_errors=True)
 output_base_dir.mkdir(parents=True, exist_ok=True)
 
-cols1 = ['F1_' + str(i) for i in [6, 16]]
-cols2 = ['F2_' + str(i) for i in [6, 16]]
-# cols1 = ['F1_' + str(i) for i in range(1, 22)]
-# cols2 = ['F2_' + str(i) for i in range(1, 22)]
+# cols1 = ['F1_' + str(i) for i in [6, 16]]
+# cols2 = ['F2_' + str(i) for i in [6, 16]]
+cols1 = ['F1_' + str(i) for i in range(1, 22)]
+cols2 = ['F2_' + str(i) for i in range(1, 22)]
 kCols = cols1 + cols2
 df_formant = LoadFormantData()
-# df_formant = ComputeBreak(df_formant)
+df_formant = ComputeBreak(df_formant)
 df_formant = NormalizeColumn(df_formant, 'F1_6')
 df_formant = NormalizeColumn(df_formant, 'F1_16')
 df_formant = NormalizeColumn(df_formant, 'F2_6')
 df_formant = NormalizeColumn(df_formant, 'F2_16')
 df_formant = ComputeDelta(df_formant)
+df_formant.to_csv(output_base_dir / 'normalized_debug.csv', index=False)
 output_df = pd.concat(
             [df_formant[['Filename']],
              df_formant[['Annotation']],
+             df_formant[['breakF1']],
+             df_formant[['breakF2']],
              df_formant[['deltaF1']],
              df_formant[['deltaF2']],
              df_formant[['delta_barkF1']],
